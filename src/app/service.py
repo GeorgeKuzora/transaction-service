@@ -168,6 +168,48 @@ class TransactionService:
             logger.error(f'Transaction type {tran_type} is not valid')
             raise ValueError(f'Transaction type {tran_type} is not valid')
 
+    def create_transaction_report(
+        self,
+        user_id: int,
+        start_date: datetime,
+        end_date: datetime,
+    ) -> TransactionReport:
+        """
+        Метод создания отчета о транзакциях пользователя.
+
+        Создает сохраняет в хранилище данных и возвращает отчет
+        о транзакциях пользоватля за период.
+
+        Args:
+            user_id: int - ID пользователя выполневшего транзакцию.
+            start_date: datetime - дата начала периода.
+            end_date: datetime - дата конца периода.
+
+        Return:
+            TransactionReport: Объект отчет о транзакциях.
+
+        Raises:
+            ValueError: В случае если входные значения некоректны.
+            RepositoryError: При ошибке доступа к данным.
+        """
+        self._validate_user_id(user_id)
+        self._validate_time_period(start_date, end_date)
+        self._validate_date(start_date)
+        self._validate_date(end_date)
+        self._validate_time_period(start_date, end_date)
+
+        try:
+            return self.repository.create_transaction_report(
+                user_id, start_date, end_date,
+            )
+        except RepositoryError as err:
+            logger.error(
+                f"Can't create report for user {user_id} in data storage",
+            )
+            raise RepositoryError(
+                f"Can't create report for user {user_id} in data storage",
+            ) from err
+
     def _validate_date(self, date: datetime) -> None:
         if not isinstance(date, datetime):
             logger.error(f'date {date} is not a valid date')
