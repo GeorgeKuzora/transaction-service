@@ -119,3 +119,8 @@ class TransactionService:
         if not isinstance(amount, int) and amount <= 0:
             logger.error(f'Transaction amount {amount} is not valid')
             raise ValueError(f'Transaction amount {amount} is not valid')
+
+    def _validate_transaction_type(self, tran_type: TransactionType) -> None:
+        if not isinstance(tran_type, TransactionType):
+            logger.error(f'Transaction type {tran_type} is not valid')
+            raise ValueError(f'Transaction type {tran_type} is not valid')
