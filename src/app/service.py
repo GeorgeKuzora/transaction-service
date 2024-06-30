@@ -2,6 +2,8 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
+from typing import Protocol
+
 logger = logging.getLogger(__name__)
 
 
@@ -63,3 +65,25 @@ class TransactionReport:
     start_date: datetime
     end_date: datetime
     transanctions: list[Transaction]
+
+
+class Repository(Protocol):
+    """
+    Интерфейс для работы с хранилищами данных.
+
+    Repository - это слой абстракции для работы с хранилищами данных.
+    Служит для уменьшения связности компонентов сервиса.
+    """
+
+    def create_transaction(self, transaction: Transaction) -> Transaction:
+        """Абстрактный метод создания транзакции."""
+        ...
+
+    def create_transaction_report(
+        self,
+        user_id: int,
+        start_date: datetime,
+        end_date: datetime,
+    ) -> TransactionReport:
+        """Абстрактный метод создания отчета."""
+        ...
