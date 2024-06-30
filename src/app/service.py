@@ -110,6 +110,49 @@ class TransactionService:
         """
         self.repository: Repository = repository
 
+    def create_transaction(
+        self, user_id: int, amount: int, transaction_type: TransactionType,
+    ) -> Transaction:
+        """
+        Метод создание записи о проведенной транзакции.
+
+        Создает запись о проведенной транзакции в хранилище данных.
+
+        Args:
+            user_id: int - ID пользователя выполневшего транзакцию.
+            amount: int - сумма транзакции.
+            transaction_type: TransactionType - тип транзакции.
+
+        Return:
+            Transaction: Объект транзакции.
+
+        Raises:
+            ValueError: В случае если входные значения некоректны.
+            RepositoryError: При ошибке доступа к данным.
+        """
+        self._validate_user_id(user_id)
+        self._validate_amount(amount)
+        self._validate_transaction_type(transaction_type)
+
+        timestamp = datetime.now()
+
+        transaction = Transaction(
+            user_id=user_id,
+            amount=amount,
+            transacton_type=transaction_type,
+            timestamp=timestamp,
+        )
+
+        try:
+            return self.repository.create_transaction(transaction)
+        except RepositoryError as err:
+            logger.error(
+                f"Can't create transaction {transaction} in data storage",
+            )
+            raise RepositoryError(
+                f"Can't create transaction {transaction} in data storage",
+            ) from err
+
     def _validate_user_id(self, user_id: int) -> None:
         if not isinstance(user_id, int):
             logger.error(f'userID {user_id} is not valid')
