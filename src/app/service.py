@@ -87,3 +87,25 @@ class Repository(Protocol):
     ) -> TransactionReport:
         """Абстрактный метод создания отчета."""
         ...
+
+
+class TransactionService:
+    """
+    Сервис обработки транзакций пользователя.
+
+    Позволяет:
+       Создать транзацию и записать ее в хранилище.
+       Получть список транзаций за указанный период.
+
+    Attributes:
+        repository: Repository - хранилище данных.
+    """
+
+    def __init__(self, repository: Repository) -> None:
+        """
+        Функция инициализации.
+
+        Args:
+            repository: Repository - хранилище данных.
+        """
+        self.repository: Repository = repository
