@@ -167,3 +167,8 @@ class TransactionService:
         if not isinstance(tran_type, TransactionType):
             logger.error(f'Transaction type {tran_type} is not valid')
             raise ValueError(f'Transaction type {tran_type} is not valid')
+
+    def _validate_date(self, date: datetime) -> None:
+        if not isinstance(date, datetime):
+            logger.error(f'date {date} is not a valid date')
+            raise ValueError(f'date {date} is not a valid date')
