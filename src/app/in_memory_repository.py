@@ -54,3 +54,43 @@ class InMemoryRepository:
         logger.info(f'Добавил транзакцию {transaction} в хранилище')
 
         return indexed_transaction
+
+    def create_transaction_report(
+        self, user_id: int, start_date: datetime, end_date: datetime,
+    ) -> TransactionReport:
+        """
+        Создает отчет о транзакциях пользователя за период.
+
+        Создает отчет о транзациях пользователя на основании
+        ID пользователя, дат начала и конца периода. Сохраняет отчет
+        в список, возвращает отчет.
+
+        Args:
+            user_id: int - ID пользователя.
+            start_date: datetime - Дата начала периода.
+            end_date: datetime - Дата окончания периода.
+
+        Returns:
+            TransactionReport: Отчет о транзакциях пользователя
+        """
+        filtered_transactions = [
+            in_transaction for in_transaction in self.transactions if (
+                in_transaction.user_id == user_id and
+                in_transaction.timestamp.date() >= start_date.date() and
+                in_transaction.timestamp.date() <= end_date.date()
+            )
+        ]
+
+        report = TransactionReport(
+            report_id=self.reports_count,
+            user_id=user_id,
+            start_date=start_date,
+            end_date=end_date,
+            transanctions=filtered_transactions,
+        )
+
+        self.reports_count += 1
+        self.reports.append(report)
+        logger.info(f'Добавил отчет {report} в хранилище')
+
+        return report
