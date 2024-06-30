@@ -109,3 +109,8 @@ class TransactionService:
             repository: Repository - хранилище данных.
         """
         self.repository: Repository = repository
+
+    def _validate_user_id(self, user_id: int) -> None:
+        if not isinstance(user_id, int):
+            logger.error(f'userID {user_id} is not valid')
+            raise ValueError(f'userID {user_id} is not valid')
