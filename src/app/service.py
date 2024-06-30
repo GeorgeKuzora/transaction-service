@@ -43,3 +43,23 @@ class Transaction:
     transacton_type: TransactionType
     timestamp: datetime
     transaction_id: int | None = None
+
+
+@dataclass
+class TransactionReport:
+    """
+    Отчет о транзациях выполненных пользователем.
+
+    Attributes:
+        report_id: int - ID отчета о транзакциях
+        user_id: int - ID пользователя.
+        start_date: datetime - дата начала периода отчета
+        end_date: datetime - дата конца периода отчета.
+        transactions: list[Transaction] - список транзакций за период.
+    """
+
+    report_id: int
+    user_id: int
+    start_date: datetime
+    end_date: datetime
+    transanctions: list[Transaction]
