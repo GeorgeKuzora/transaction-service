@@ -172,3 +172,14 @@ class TransactionService:
         if not isinstance(date, datetime):
             logger.error(f'date {date} is not a valid date')
             raise ValueError(f'date {date} is not a valid date')
+
+    def _validate_time_period(
+        self, start_date: datetime, end_date: datetime,
+    ) -> None:
+        if start_date > end_date:
+            logger.error(
+                f"{start_date} can't be greater than {end_date}",
+            )
+            raise ValueError(
+                f"{start_date} can't be greater than {end_date}",
+            )
