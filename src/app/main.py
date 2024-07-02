@@ -16,21 +16,21 @@ def main() -> None:
         amount=10,
         transaction_type=TransactionType.SELL,
     )
-    logger.info(f'Создана транзакция {transaction}')
+    logger.info(f'created {transaction}')
 
     transaction = service.create_transaction(
         user_id=2,
         amount=10,
         transaction_type=TransactionType.SELL,
     )
-    logger.info(f'Создана транзакция {transaction}')
+    logger.info(f'created {transaction}')
 
     transaction = service.create_transaction(
         user_id=1,
         amount=4,
         transaction_type=TransactionType.BUY,
     )
-    logger.info(f'Создана транзакция {transaction}')
+    logger.info(f'created {transaction}')
 
     report = service.create_transaction_report(
         user_id=1,
@@ -38,7 +38,7 @@ def main() -> None:
         end_date=datetime.now() + timedelta(days=1),
     )
 
-    logger.info(f'Создан отчет {report}')
+    logger.info(f'created {report}')
 
 
 if __name__ == '__main__':
