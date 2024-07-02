@@ -51,7 +51,7 @@ class InMemoryRepository:
 
         self.transactions_count += 1
         self.transactions.append(indexed_transaction)
-        logger.info(f'Добавил транзакцию {transaction} в хранилище')
+        logger.info(f'created {transaction}')
 
         return indexed_transaction
 
@@ -91,6 +91,6 @@ class InMemoryRepository:
 
         self.reports_count += 1
         self.reports.append(report)
-        logger.info(f'Добавил отчет {report} в хранилище')
+        logger.info(f'created{report}')
 
         return report
