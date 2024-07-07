@@ -89,3 +89,18 @@ def test_validate_amount(amount, service):
 def test_validate_transaction_type(transaction_type, service):
     """Тест метода _validate_transaction_type."""
     service._validate_transaction_type(transaction_type)
+
+
+@pytest.mark.parametrize(
+    'date', (
+        pytest.param(datetime.now(), id='valid date'),
+        pytest.param(
+            '12.12.2024',
+            id='date as string',
+            marks=pytest.mark.xfail(raises=ValueError),
+        ),
+    ),
+)
+def test_validate_date(date, service):
+    """Тест метода _validate_date."""
+    service._validate_date(date)
