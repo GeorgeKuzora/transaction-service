@@ -193,7 +193,6 @@ class TransactionService:
             RepositoryError: При ошибке доступа к данным.
         """
         self._validate_user_id(user_id)
-        self._validate_time_period(start_date, end_date)
         self._validate_date(start_date)
         self._validate_date(end_date)
         self._validate_time_period(start_date, end_date)
