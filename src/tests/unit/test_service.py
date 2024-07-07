@@ -173,3 +173,34 @@ def test_create_transaction(user_id, amount, transaction_type, service):
         user_id, amount, transaction_type,
     )
     assert transaction == expected_transaction
+
+
+@pytest.mark.parametrize(
+    'user_id, amount, transaction_type', (
+        pytest.param(
+            1,
+            1,
+            TransactionType.BUY,
+            id='valid atributes BUY',
+        ),
+        pytest.param(
+            1,
+            1,
+            TransactionType.SELL,
+            id='valid atributes SELL',
+        ),
+    ),
+)
+def test_create_transaction_raises(
+    user_id, amount, transaction_type, service,
+):
+    """Тест метода create_transaction в случае ошибки в репозитории."""
+
+    def side_effect(*args):
+        raise RepositoryError(args)
+
+    service.repository.create_transaction = side_effect
+    with pytest.raises(RepositoryError):
+        service.create_transaction(
+            user_id, amount, transaction_type,
+        )
