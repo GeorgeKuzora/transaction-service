@@ -68,3 +68,24 @@ def test_validate_user_id(user_id, service):
 def test_validate_amount(amount, service):
     """Тест метода _validate_amount."""
     service._validate_amount(amount)
+
+
+@pytest.mark.parametrize(
+    'transaction_type', (
+        pytest.param(TransactionType.BUY, id='type BUY'),
+        pytest.param(TransactionType.SELL, id='type SELL'),
+        pytest.param(
+            'BUY',
+            id='type string BUY',
+            marks=pytest.mark.xfail(raises=ValueError),
+        ),
+        pytest.param(
+            'SELL',
+            id='type string SELL',
+            marks=pytest.mark.xfail(raises=ValueError),
+        ),
+    ),
+)
+def test_validate_transaction_type(transaction_type, service):
+    """Тест метода _validate_transaction_type."""
+    service._validate_transaction_type(transaction_type)
