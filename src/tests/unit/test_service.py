@@ -38,3 +38,33 @@ def service():
 def test_validate_user_id(user_id, service):
     """Тест метода _validate_user_id."""
     service._validate_user_id(user_id)
+
+
+@pytest.mark.parametrize(
+    'amount', (
+        pytest.param(1, id='amount = 1'),
+        pytest.param(
+            0,
+            id='amount = 0',
+            marks=pytest.mark.xfail(raises=ValueError),
+        ),
+        pytest.param(
+            -1,
+            id='amount = -1',
+            marks=pytest.mark.xfail(raises=ValueError),
+        ),
+        pytest.param(
+            '1',
+            id='amount string',
+            marks=pytest.mark.xfail(raises=ValueError),
+        ),
+        pytest.param(
+            1.1,
+            id='amount float',
+            marks=pytest.mark.xfail(raises=ValueError),
+        ),
+    ),
+)
+def test_validate_amount(amount, service):
+    """Тест метода _validate_amount."""
+    service._validate_amount(amount)
