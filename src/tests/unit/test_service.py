@@ -204,3 +204,64 @@ def test_create_transaction_raises(
         service.create_transaction(
             user_id, amount, transaction_type,
         )
+
+
+@pytest.mark.parametrize(
+    'user_id, start_date, end_date', (
+        pytest.param(
+            1,
+            datetime.now(),
+            datetime.now() + timedelta(days=1),
+            id='valid atributes',
+        ),
+        pytest.param(
+            '1',
+            datetime.now(),
+            datetime.now() + timedelta(days=1),
+            id='invalid user ID',
+            marks=pytest.mark.xfail(raises=ValueError),
+        ),
+        pytest.param(
+            1,
+            datetime.now(),
+            datetime.now() - timedelta(days=1),
+            id='invalid period',
+            marks=pytest.mark.xfail(raises=ValueError),
+        ),
+        pytest.param(
+            1,
+            str(datetime.now()),
+            datetime.now() + timedelta(days=1),
+            id='invalid start date',
+            marks=pytest.mark.xfail(raises=ValueError),
+        ),
+        pytest.param(
+            1,
+            datetime.now(),
+            str(datetime.now() + timedelta(days=1)),
+            id='invalid end date',
+            marks=pytest.mark.xfail(raises=ValueError),
+        ),
+    ),
+)
+def test_create_transaction_report(
+    user_id, start_date, end_date, service,
+):
+    """Тест метода create_transaction_report."""
+    expected_transaction = Transaction(
+        1, 1, TransactionType.BUY, datetime.now(), 1,
+    )
+
+    expected_report = TransactionReport(
+        1,
+        1,
+        datetime.now(),
+        datetime.now() + timedelta(days=1),
+        [expected_transaction],
+    )
+
+    service.repository.create_transaction_report.return_value = expected_report
+    report = service.create_transaction_report(
+        user_id, start_date, end_date,
+    )
+    assert report == expected_report
