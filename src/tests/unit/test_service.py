@@ -265,3 +265,28 @@ def test_create_transaction_report(
         user_id, start_date, end_date,
     )
     assert report == expected_report
+
+
+@pytest.mark.parametrize(
+    'user_id, start_date, end_date', (
+        pytest.param(
+            1,
+            datetime.now(),
+            datetime.now() + timedelta(days=1),
+            id='valid atributes',
+        ),
+    ),
+)
+def test_create_transaction_report_raises(
+    user_id, start_date, end_date, service,
+):
+    """Тест метода create_transaction_report в случае ошибки репозитория."""
+
+    def side_effect(*args):
+        raise RepositoryError(args)
+
+    service.repository.create_transaction_report = side_effect
+    with pytest.raises(RepositoryError):
+        service.create_transaction_report(
+            user_id, start_date, end_date,
+        )
