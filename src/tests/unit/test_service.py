@@ -104,3 +104,23 @@ def test_validate_transaction_type(transaction_type, service):
 def test_validate_date(date, service):
     """Тест метода _validate_date."""
     service._validate_date(date)
+
+
+@pytest.mark.parametrize(
+    'start_date, end_date', (
+        pytest.param(
+            datetime.now(),
+            datetime.now() + timedelta(days=1),
+            id='valid time period',
+        ),
+        pytest.param(
+            datetime.now(),
+            datetime.now() - timedelta(days=1),
+            id='invalid time period end date less than start date',
+            marks=pytest.mark.xfail(raises=ValueError),
+        ),
+    ),
+)
+def test_validate_time_period(start_date, end_date, service):
+    """Тест метода _validate_time_period."""
+    service._validate_time_period(start_date, end_date)
