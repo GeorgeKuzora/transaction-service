@@ -124,3 +124,52 @@ def test_validate_date(date, service):
 def test_validate_time_period(start_date, end_date, service):
     """Тест метода _validate_time_period."""
     service._validate_time_period(start_date, end_date)
+
+
+@pytest.mark.parametrize(
+    'user_id, amount, transaction_type', (
+        pytest.param(
+            1,
+            1,
+            TransactionType.BUY,
+            id='valid atributes BUY',
+        ),
+        pytest.param(
+            1,
+            1,
+            TransactionType.SELL,
+            id='valid atributes SELL',
+        ),
+        pytest.param(
+            '1',
+            1,
+            TransactionType.BUY,
+            id='invalid user ID',
+            marks=pytest.mark.xfail(raises=ValueError),
+        ),
+        pytest.param(
+            1,
+            -1,
+            TransactionType.BUY,
+            id='invalid amount',
+            marks=pytest.mark.xfail(raises=ValueError),
+        ),
+        pytest.param(
+            1,
+            1,
+            'BUY',
+            id='invalid transaction type',
+            marks=pytest.mark.xfail(raises=ValueError),
+        ),
+    ),
+)
+def test_create_transaction(user_id, amount, transaction_type, service):
+    """Тест метода create_transaction."""
+    expected_transaction = Transaction(
+        1, 1, TransactionType.BUY, datetime.now(), 1,
+    )
+    service.repository.create_transaction.return_value = expected_transaction
+    transaction = service.create_transaction(
+        user_id, amount, transaction_type,
+    )
+    assert transaction == expected_transaction
