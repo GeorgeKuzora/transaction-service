@@ -1,8 +1,8 @@
 import logging
 from datetime import datetime, timedelta
 
-from app.in_memory_repository import InMemoryRepository
-from app.service import TransactionService, TransactionType
+from app.in_memory_repository import InMemoryRepository  # type: ignore
+from app.service import TransactionService, TransactionType  # type: ignore
 
 
 def main() -> None:
