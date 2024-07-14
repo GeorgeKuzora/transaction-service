@@ -2,8 +2,9 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from app.in_memory_repository import InMemoryRepository
-from app.service import Transaction, TransactionReport, TransactionService, TransactionType  # noqa
+from app.core.transactions import TransactionType  # noqa
+from app.core.transactions import Transaction, TransactionReport, TransactionService  # noqa
+from app.external.in_memory_repository import InMemoryRepository
 
 
 @pytest.fixture

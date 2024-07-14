@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 
-from app.service import Transaction, TransactionReport  # type: ignore
+from app.core.transactions import Transaction, TransactionReport  # type: ignore  # noqa
 
 logger = logging.getLogger(__name__)
 

@@ -3,8 +3,9 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from app.service import TransactionType  # noqa
-from app.service import RepositoryError, Transaction, TransactionReport, TransactionService  # noqa
+from app.core.transactions import TransactionService  # noqa
+from app.core.transactions import TransactionType  # noqa
+from app.core.transactions import RepositoryError, Transaction, TransactionReport  # noqa
 
 
 @pytest.fixture(scope='module')
