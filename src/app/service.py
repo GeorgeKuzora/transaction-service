@@ -1,8 +1,8 @@
 import logging
 from datetime import datetime, timedelta
 
-from app.core.transactions import TransactionService, TransactionType  # type: ignore  # noqa
-from app.external.in_memory_repository import InMemoryRepository  # type: ignore  # noqa
+from app.core.transactions import TransactionService, TransactionType
+from app.external.in_memory_repository import InMemoryRepository
 
 
 def main() -> None:
@@ -14,23 +14,20 @@ def main() -> None:
     transaction = service.create_transaction(
         user_id=1,
         amount=10,
-        transaction_type=TransactionType.SELL,
+        transaction_type=TransactionType.sell,
     )
-    logger.info(f'created {transaction}')
 
     transaction = service.create_transaction(
         user_id=2,
         amount=10,
-        transaction_type=TransactionType.SELL,
+        transaction_type=TransactionType.sell,
     )
-    logger.info(f'created {transaction}')
 
     transaction = service.create_transaction(
         user_id=1,
         amount=4,
-        transaction_type=TransactionType.BUY,
+        transaction_type=TransactionType.buy,
     )
-    logger.info(f'created {transaction}')
 
     report = service.create_transaction_report(
         user_id=1,
@@ -38,6 +35,7 @@ def main() -> None:
         end_date=datetime.now() + timedelta(days=1),
     )
 
+    logger.info(f'created {transaction}')
     logger.info(f'created {report}')
 
 

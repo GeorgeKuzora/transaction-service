@@ -23,8 +23,8 @@ class TransactionType(Enum):
     Может быть либо Продажа, либо Покупка.
     """
 
-    SELL = 0
-    BUY = 1
+    sell = 0
+    buy = 1
 
 
 @dataclass
@@ -77,7 +77,7 @@ class Repository(Protocol):
 
     def create_transaction(self, transaction: Transaction) -> Transaction:
         """Абстрактный метод создания транзакции."""
-        ...
+        ...  # noqa: WPS428 valid protocol syntax
 
     def create_transaction_report(
         self,
@@ -86,7 +86,86 @@ class Repository(Protocol):
         end_date: datetime,
     ) -> TransactionReport:
         """Абстрактный метод создания отчета."""
-        ...
+        ...  # noqa: WPS428 valid protocol syntax
+
+
+class Validator:
+    """Валидатор для определения логики валидации поступающих данных."""
+
+    def validate_user_id(self, user_id: int) -> None:
+        """
+        Метод валидации id пользователя.
+
+        :param user_id: ID пользователя
+        :type user_id: int
+        :raises ValueError: если валидация не пройдена
+        """
+        if not isinstance(user_id, int) or user_id < 0:  # type: ignore
+            logger.error(f'not valid userID {user_id}')
+            raise ValueError(f'not valid userID {user_id}')
+
+    def validate_amount(self, amount: int) -> None:
+        """
+        Метод валидации величины транзакции.
+
+        :param amount: Величина транзакции
+        :type amount: int
+        :raises ValueError: если валидация не пройдена
+        """
+        if not isinstance(amount, int) or amount <= 0:  # type: ignore
+            logger.error(f'not valid transaction amount {amount}')
+            raise ValueError(f'not valid transaction amount {amount}')
+
+    def validate_transaction_type(self, tran_type: TransactionType) -> None:
+        """
+        Метод валидации типа транзакции.
+
+        :param tran_type: тип транзакции
+        :type tran_type: TransactionType
+        :raises ValueError: если валидация не пройдена
+        """
+        if not isinstance(tran_type, TransactionType):
+            logger.error(  # type: ignore
+                f'Not valid transaction type {tran_type}',
+            )
+            raise ValueError(
+                f'Not valid transaction type {tran_type}',
+            )
+
+    def validate_date(self, date: datetime) -> None:
+        """
+        Метод валидации даты.
+
+        :param date: дата
+        :type date: datetime
+        :raises ValueError: если валидация не пройдена
+        """
+        if not isinstance(date, datetime):
+            logger.error(f'date {date} is not a valid date')  # type: ignore
+            raise ValueError(f'date {date} is not a valid date')
+
+    def validate_time_period(
+        self, start_date: datetime, end_date: datetime,
+    ) -> None:
+        """
+        Метод валидации периода времени.
+
+        :param start_date: начальная дата периода
+        :type start_date: datetime
+        :param end_date: конечная дата периода
+        :type end_date: datetime
+        :raises ValueError: если валидация не пройдена
+        """
+        if start_date > end_date:
+            logger.error(
+                f"{start_date} can't be greater than {end_date}",
+            )
+            raise ValueError(
+                f"{start_date} can't be greater than {end_date}",
+            )
+
+
+default_validator = Validator()
 
 
 class TransactionService:
@@ -101,14 +180,19 @@ class TransactionService:
         repository: Repository - хранилище данных.
     """
 
-    def __init__(self, repository: Repository) -> None:
+    def __init__(
+        self, repository: Repository, validator: Validator = default_validator,
+    ) -> None:
         """
         Функция инициализации.
 
-        Args:
-            repository: Repository - хранилище данных.
+        :param repository: хранилище данных.
+        :type repository: Repository
+        :param validator: валидатор входных данных.
+        :type validator: Validator
         """
-        self.repository: Repository = repository
+        self.repository = repository
+        self.validator = validator
 
     def create_transaction(
         self, user_id: int, amount: int, transaction_type: TransactionType,
@@ -118,21 +202,19 @@ class TransactionService:
 
         Создает запись о проведенной транзакции в хранилище данных.
 
-        Args:
-            user_id: int - ID пользователя выполневшего транзакцию.
-            amount: int - сумма транзакции.
-            transaction_type: TransactionType - тип транзакции.
-
-        Return:
-            Transaction: Объект транзакции.
-
-        Raises:
-            ValueError: В случае если входные значения некоректны.
-            RepositoryError: При ошибке доступа к данным.
+        :param user_id: ID пользователя выполневшего транзакцию.
+        :type user_id: int
+        :param amount: сумма транзакции.
+        :type amount: int
+        :param transaction_type: тип транзакции
+        :type transaction_type: TransactionType
+        :return: объект транзакции
+        :rtype: Transaction
+        :raises RepositoryError: при ошибке доступа к данным
         """
-        self._validate_user_id(user_id)
-        self._validate_amount(amount)
-        self._validate_transaction_type(transaction_type)
+        self.validator.validate_user_id(user_id)
+        self.validator.validate_amount(amount)
+        self.validator.validate_transaction_type(transaction_type)
 
         timestamp = datetime.now()
 
@@ -147,26 +229,11 @@ class TransactionService:
             return self.repository.create_transaction(transaction)
         except RepositoryError as err:
             logger.error(
-                f"Can't create transaction {transaction} in data storage",
+                f"Can't create transaction {transaction}",
             )
             raise RepositoryError(
-                f"Can't create transaction {transaction} in data storage",
+                f"Can't create transaction {transaction}",
             ) from err
-
-    def _validate_user_id(self, user_id: int) -> None:
-        if not isinstance(user_id, int):
-            logger.error(f'userID {user_id} is not valid')
-            raise ValueError(f'userID {user_id} is not valid')
-
-    def _validate_amount(self, amount: int) -> None:
-        if not isinstance(amount, int) or amount <= 0:
-            logger.error(f'Transaction amount {amount} is not valid')
-            raise ValueError(f'Transaction amount {amount} is not valid')
-
-    def _validate_transaction_type(self, tran_type: TransactionType) -> None:
-        if not isinstance(tran_type, TransactionType):
-            logger.error(f'Transaction type {tran_type} is not valid')
-            raise ValueError(f'Transaction type {tran_type} is not valid')
 
     def create_transaction_report(
         self,
@@ -180,22 +247,20 @@ class TransactionService:
         Создает сохраняет в хранилище данных и возвращает отчет
         о транзакциях пользоватля за период.
 
-        Args:
-            user_id: int - ID пользователя выполневшего транзакцию.
-            start_date: datetime - дата начала периода.
-            end_date: datetime - дата конца периода.
-
-        Return:
-            TransactionReport: Объект отчет о транзакциях.
-
-        Raises:
-            ValueError: В случае если входные значения некоректны.
-            RepositoryError: При ошибке доступа к данным.
+        :param user_id: ID пользователя выполневшего транзакцию
+        :type user_id: int
+        :param start_date: дата начала периода
+        :type start_date: datetime
+        :param end_date: дата конца периода
+        :type end_date: datetime
+        :return: объект отчет о транзакциях
+        :rtype: TransactionReport
+        :raises RepositoryError: при ошибке доступа к данным
         """
-        self._validate_user_id(user_id)
-        self._validate_date(start_date)
-        self._validate_date(end_date)
-        self._validate_time_period(start_date, end_date)
+        self.validator.validate_user_id(user_id)
+        self.validator.validate_date(start_date)
+        self.validator.validate_date(end_date)
+        self.validator.validate_time_period(start_date, end_date)
 
         try:
             return self.repository.create_transaction_report(
@@ -203,24 +268,8 @@ class TransactionService:
             )
         except RepositoryError as err:
             logger.error(
-                f"Can't create report for user {user_id} in data storage",
+                f"Can't create report for user {user_id}",
             )
             raise RepositoryError(
-                f"Can't create report for user {user_id} in data storage",
+                f"Can't create report for user {user_id}",
             ) from err
-
-    def _validate_date(self, date: datetime) -> None:
-        if not isinstance(date, datetime):
-            logger.error(f'date {date} is not a valid date')
-            raise ValueError(f'date {date} is not a valid date')
-
-    def _validate_time_period(
-        self, start_date: datetime, end_date: datetime,
-    ) -> None:
-        if start_date > end_date:
-            logger.error(
-                f"{start_date} can't be greater than {end_date}",
-            )
-            raise ValueError(
-                f"{start_date} can't be greater than {end_date}",
-            )

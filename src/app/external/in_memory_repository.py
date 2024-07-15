@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 
-from app.core.transactions import Transaction, TransactionReport  # type: ignore  # noqa
+from app.core.transactions import Transaction, TransactionReport
 
 logger = logging.getLogger(__name__)
 
@@ -35,11 +35,10 @@ class InMemoryRepository:
         список транзакций. Возвращает созданную индексированную запись
         о транзакции.
 
-        Args:
-            transaction: Неиндексированный объект Transaction.
-
-        Returns:
-            Transaction: Индексированная запись о транзакции.
+        :param transaction: Неиндексированный объект Transaction.
+        :type transaction: Transaction
+        :return: индексированная запись о транзакции.
+        :rtype: Transaction
         """
         indexed_transaction = Transaction(
             user_id=transaction.user_id,
@@ -65,19 +64,21 @@ class InMemoryRepository:
         ID пользователя, дат начала и конца периода. Сохраняет отчет
         в список, возвращает отчет.
 
-        Args:
-            user_id: int - ID пользователя.
-            start_date: datetime - Дата начала периода.
-            end_date: datetime - Дата окончания периода.
-
-        Returns:
-            TransactionReport: Отчет о транзакциях пользователя
+        :param user_id: ID пользователя.
+        :type user_id: int
+        :param start_date: дата начала периода
+        :type start_date: datetime
+        :param end_date: дата окончания периода
+        :type end_date: datetime
+        :return: отчет о транзакциях пользователя
+        :rtype: TransactionReport
         """
         filtered_transactions = [
             in_transaction for in_transaction in self.transactions if (
                 in_transaction.user_id == user_id and
-                in_transaction.timestamp.date() >= start_date.date() and
-                in_transaction.timestamp.date() <= end_date.date()
+                start_date.date() <=
+                in_transaction.timestamp.date() <=
+                end_date.date()
             )
         ]
 
