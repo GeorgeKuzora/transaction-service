@@ -1,5 +1,4 @@
 import logging
-from copy import copy
 from datetime import datetime
 
 from app.core.errors import RepositoryError, ValidationError

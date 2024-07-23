@@ -1,12 +1,16 @@
-from collections import namedtuple
-from app.core.errors import ValidationError
 from datetime import datetime, timedelta
 from decimal import Decimal
 
 import pytest
 
-from app.core.models import Transaction, TransactionType, User, TransactionRequest, TransactionReportRequest, TransactionReport
-
+from app.core.errors import ValidationError
+from app.core.models import (
+    Transaction,
+    TransactionReportRequest,
+    TransactionRequest,
+    TransactionType,
+    User,
+)
 
 user_positive_balance = User(
     username='george', balance=Decimal(1), is_verified=False, user_id=1,

@@ -67,7 +67,7 @@ class Repository(Protocol):
 class Cache(Protocol):
     """Интерфейс кэша сервиса."""
 
-    async def get_cache(self, cached_value: Any) -> Any | None:
+    async def get_cache(self, cached_value: Any) -> TransactionReport | None:
         """
         Получает значение из кэша.
 
