@@ -54,8 +54,8 @@ class InMemoryRepository:
             transaction_id=self.transactions_count,
         )
 
-        self.transactions_count += 1
         self.transactions.append(indexed_transaction)
+        self.transactions_count += 1
         logger.info(f'created {transaction}')
 
         return indexed_transaction

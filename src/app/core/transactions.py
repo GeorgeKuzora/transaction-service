@@ -160,11 +160,10 @@ class TransactionService:
             timestamp=timestamp,
         )
 
-        user_after_transaction = copy(user)
-        user_after_transaction.process_transacton(transaction)
+        user.process_transacton(transaction)
 
         try:
-            await self.repository.update_user(user_after_transaction)
+            await self.repository.update_user(user)
         except RepositoryError as user_err:
             logger.error(
                 f"Can't update user {user}",
@@ -197,8 +196,6 @@ class TransactionService:
         :return: объект отчет о транзакциях
         :rtype: TransactionReport
         """
-        self.validator.validate_date(report_request.start_date)
-        self.validator.validate_date(report_request.end_date)
         self.validator.validate_time_period(
             report_request.start_date, report_request.end_date,
         )
