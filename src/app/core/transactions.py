@@ -1,92 +1,18 @@
 import logging
-from dataclasses import dataclass
+from copy import copy
 from datetime import datetime
-from enum import Enum
-from typing import Protocol
+
+from app.core.errors import RepositoryError, ValidationError
+from app.core.interfaces import Cache, Repository
+from app.core.models import (
+    Transaction,
+    TransactionReport,
+    TransactionReportRequest,
+    TransactionRequest,
+    TransactionType,
+)
 
 logger = logging.getLogger(__name__)
-
-
-class RepositoryError(Exception):
-    """
-    Исключение возникающее при запросе в хранилище данных.
-
-    Импортировать в имплементации репозитория данных,
-    для вызова исключения при ошибке доступа к данным.
-    """
-
-
-class TransactionType(Enum):
-    """
-    Тип транзакции.
-
-    Может быть либо Продажа, либо Покупка.
-    """
-
-    sell = 0
-    buy = 1
-
-
-@dataclass
-class Transaction:
-    """
-    Транзакция выполненная пользователем.
-
-    Attributes:
-        transaction_id: int | None - ID транзакции
-        user_id: int - ID пользователя.
-        amount: int - сумма транзакции.
-        transaction_type: bool - тип транзации. True-продажа, False-покупка.
-        timestamp: datetime - временная метка транзакции.
-    """
-
-    user_id: int
-    amount: int
-    transacton_type: TransactionType
-    timestamp: datetime
-    transaction_id: int | None = None
-
-
-@dataclass
-class TransactionReport:
-    """
-    Отчет о транзациях выполненных пользователем.
-
-    Attributes:
-        report_id: int - ID отчета о транзакциях
-        user_id: int - ID пользователя.
-        start_date: datetime - дата начала периода отчета
-        end_date: datetime - дата конца периода отчета.
-        transactions: list[Transaction] - список транзакций за период.
-    """
-
-    report_id: int
-    user_id: int
-    start_date: datetime
-    end_date: datetime
-    transanctions: list[Transaction]
-
-
-class Repository(Protocol):
-    """
-    Интерфейс для работы с хранилищами данных.
-
-    Repository - это слой абстракции для работы с хранилищами данных.
-    Служит для уменьшения связности компонентов сервиса.
-    """
-
-    def create_transaction(self, transaction: Transaction) -> Transaction:
-        """Абстрактный метод создания транзакции."""
-        ...  # noqa: WPS428 valid protocol syntax
-
-    def create_transaction_report(
-        self,
-        user_id: int,
-        start_date: datetime,
-        end_date: datetime,
-    ) -> TransactionReport:
-        """Абстрактный метод создания отчета."""
-        ...  # noqa: WPS428 valid protocol syntax
 
 
 class Validator:
@@ -181,7 +107,10 @@ class TransactionService:
     """
 
     def __init__(
-        self, repository: Repository, validator: Validator = default_validator,
+        self,
+        repository: Repository,
+        validator: Validator = default_validator,
+        cache: Cache | None = None,
     ) -> None:
         """
         Функция инициализации.
@@ -190,56 +119,72 @@ class TransactionService:
         :type repository: Repository
         :param validator: валидатор входных данных.
         :type validator: Validator
+        :param cache: Кэш сервиса
+        :type cache: Cache
         """
         self.repository = repository
         self.validator = validator
+        self.cache = cache
 
-    def create_transaction(
-        self, user_id: int, amount: int, transaction_type: TransactionType,
+    async def create_transaction(
+        self, transaction_request: TransactionRequest,
     ) -> Transaction:
         """
         Метод создание записи о проведенной транзакции.
 
         Создает запись о проведенной транзакции в хранилище данных.
 
-        :param user_id: ID пользователя выполневшего транзакцию.
-        :type user_id: int
-        :param amount: сумма транзакции.
-        :type amount: int
-        :param transaction_type: тип транзакции
-        :type transaction_type: TransactionType
+        :param transaction_request: Запрос о транзакции
+        :type transaction_request: TransactionRequest
         :return: объект транзакции
         :rtype: Transaction
         :raises RepositoryError: при ошибке доступа к данным
+        :raises ValidationError: при ошибке валидации данных
         """
-        self.validator.validate_user_id(user_id)
-        self.validator.validate_amount(amount)
-        self.validator.validate_transaction_type(transaction_type)
+        user = await self.repository.get_user(transaction_request.username)
+        if not user:
+            logger.warning(
+                f'Пользователь {transaction_request.username} не найден',
+            )
+            raise ValidationError(
+                f'Пользователь {transaction_request.username} не найден',
+            )
+        user.validate_transaciton(transaction_request)
 
         timestamp = datetime.now()
 
         transaction = Transaction(
-            user_id=user_id,
-            amount=amount,
-            transacton_type=transaction_type,
+            username=transaction_request.username,
+            amount=transaction_request.amount,
+            transaction_type=transaction_request.transaciton_type,
             timestamp=timestamp,
         )
 
+        user_after_transaction = copy(user)
+        user_after_transaction.process_transacton(transaction)
+
         try:
-            return self.repository.create_transaction(transaction)
-        except RepositoryError as err:
+            await self.repository.update_user(user_after_transaction)
+        except RepositoryError as user_err:
+            logger.error(
+                f"Can't update user {user}",
+            )
+            raise RepositoryError(
+                f"Can't update user {user}",
+            ) from user_err
+        try:
+            return await self.repository.create_transaction(transaction)
+        except RepositoryError as transaction_err:
             logger.error(
                 f"Can't create transaction {transaction}",
             )
             raise RepositoryError(
                 f"Can't create transaction {transaction}",
-            ) from err
+            ) from transaction_err
 
-    def create_transaction_report(
+    async def create_transaction_report(
         self,
-        user_id: int,
-        start_date: datetime,
-        end_date: datetime,
+        report_request: TransactionReportRequest,
     ) -> TransactionReport:
         """
         Метод создания отчета о транзакциях пользователя.
@@ -247,29 +192,45 @@ class TransactionService:
         Создает сохраняет в хранилище данных и возвращает отчет
         о транзакциях пользоватля за период.
 
-        :param user_id: ID пользователя выполневшего транзакцию
-        :type user_id: int
-        :param start_date: дата начала периода
-        :type start_date: datetime
-        :param end_date: дата конца периода
-        :type end_date: datetime
+        :param report_request: Запрос отчета
+        :type report_request: TransactionReportRequest
         :return: объект отчет о транзакциях
         :rtype: TransactionReport
-        :raises RepositoryError: при ошибке доступа к данным
         """
-        self.validator.validate_user_id(user_id)
-        self.validator.validate_date(start_date)
-        self.validator.validate_date(end_date)
-        self.validator.validate_time_period(start_date, end_date)
+        self.validator.validate_date(report_request.start_date)
+        self.validator.validate_date(report_request.end_date)
+        self.validator.validate_time_period(
+            report_request.start_date, report_request.end_date,
+        )
 
-        try:
-            return self.repository.create_transaction_report(
-                user_id, start_date, end_date,
+        if self.cache:
+            report = await self._create_transaction_report_with_cache(
+                report_request,
             )
-        except RepositoryError as err:
-            logger.error(
-                f"Can't create report for user {user_id}",
+        else:
+            report = await self._create_transaction_report_without_cache(
+                report_request,
             )
-            raise RepositoryError(
-                f"Can't create report for user {user_id}",
-            ) from err
+        return report
+
+    async def _create_transaction_report_with_cache(
+        self, request: TransactionReportRequest,
+    ) -> TransactionReport:
+        report = None
+        if self.cache:
+            try:
+                report = await self.cache.get_cache(request)
+            except KeyError:
+                report = await self.repository.create_transaction_report(
+                    request,
+                )
+                await self.cache.create_cache(report)
+        if report:
+            return report
+        logger.error('ошибка хранилища данных')
+        raise RepositoryError('ошибка хранилища данных')
+
+    async def _create_transaction_report_without_cache(
+        self, request: TransactionReportRequest,
+    ) -> TransactionReport:
+        return await self.repository.create_transaction_report(request)
