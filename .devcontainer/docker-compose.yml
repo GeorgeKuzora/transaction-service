@@ -1,15 +1,15 @@
-version: '3'
+version: "3"
 
 services:
   app:
-    container_name: 'dev-container-transaction'
+    container_name: "transaction-service-kuzora"
     build:
       context: app/
       dockerfile: Dockerfile
     volumes:
       - ..:/workspace:cached
     ports:
-      - '28080:8080'
+      - "28080:8080"
     command: sleep infinity
     cap_add:
       - SYS_PTRACE
@@ -17,3 +17,4 @@ services:
       - seccomp:unconfined
     environment:
       - PYTHONPATH=/workspace/src
+      - CONFIG_PATH="/workspace/src/config/config-local.yml"
