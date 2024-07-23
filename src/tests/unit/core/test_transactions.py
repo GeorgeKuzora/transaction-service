@@ -1,12 +1,17 @@
 from datetime import datetime, timedelta
+from decimal import Decimal
+import pydantic
 
 import pytest
 
-from app.core.transactions import (
-    RepositoryError,
+from app.core.errors import ValidationError
+from app.core.models import (
     Transaction,
+    TransactionRequest,
     TransactionReport,
+    TransactionReportRequest,
     TransactionType,
+    User,
 )
 
 
@@ -70,8 +75,8 @@ class TestValidator:
 
     @pytest.mark.parametrize(
         'transaction_type', (
-            pytest.param(TransactionType.buy, id='type BUY'),
-            pytest.param(TransactionType.sell, id='type SELL'),
+            pytest.param(TransactionType.withdraw, id='type BUY'),
+            pytest.param(TransactionType.deposit, id='type SELL'),
             pytest.param(
                 'BUY',
                 id='type string BUY',
@@ -122,172 +127,125 @@ class TestValidator:
         validator.validate_time_period(start_date, end_date)
 
 
+user_positive_balance = User(
+    username='george', user_id=1, balance=Decimal(1), is_verified=False,
+)
+user_zero_balance = User(
+    username='george', user_id=1, balance=Decimal(0), is_verified=False,
+)
+amount = Decimal(1)
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
-    'user_id, amount, transaction_type', (
+    'user, amount, transaction_type', (
         pytest.param(
-            1,
-            1,
-            TransactionType.buy,
+            user_positive_balance,
+            amount,
+            TransactionType.withdraw,
             id='valid atributes BUY',
         ),
         pytest.param(
-            1,
-            1,
-            TransactionType.sell,
+            user_positive_balance,
+            amount,
+            TransactionType.deposit,
             id='valid atributes SELL',
         ),
         pytest.param(
-            '1',
-            1,
-            TransactionType.buy,
-            id='invalid user ID',
-            marks=pytest.mark.xfail(raises=ValueError),
-        ),
-        pytest.param(
-            1,
-            -1,
-            TransactionType.buy,
+            user_zero_balance,
+            amount,
+            TransactionType.withdraw,
             id='invalid amount',
-            marks=pytest.mark.xfail(raises=ValueError),
+            marks=pytest.mark.xfail(raises=ValidationError),
         ),
         pytest.param(
-            1,
-            1,
-            'BUY',
+            user_positive_balance,
+            amount,
+            'withdraw',
             id='invalid transaction type',
             marks=pytest.mark.xfail(raises=ValueError),
         ),
     ),
 )
-def test_create_transaction(user_id, amount, transaction_type, service):
+async def test_create_transaction(user, amount, transaction_type, service):
     """Тест метода create_transaction."""
     expected_transaction = Transaction(
-        1, 1, TransactionType.buy, datetime.now(), 1,
+        username=user.username,
+        amount=amount,
+        transaction_type=transaction_type,
+        timestamp=datetime.now(),
+        transaction_id=1,
     )
+    request = TransactionRequest(
+        username=user.username,
+        amount=amount,
+        transaciton_type=transaction_type,
+    )
+    service.repository.get_user.return_value = user
     service.repository.create_transaction.return_value = expected_transaction
-    transaction = service.create_transaction(
-        user_id, amount, transaction_type,
-    )
+    transaction = await service.create_transaction(request)
     assert transaction == expected_transaction
 
 
-def repository_error(*args):
-    """
-    Вызывает исключение.
-
-    Служит для вызова в качестве side effect в моках.
-
-    :param args: параметры передаваемые в функцию
-    :type args: any
-    :raises RepositoryError: исключение для вызова в моках
-    """
-    raise RepositoryError(args)
-
-
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
-    'user_id, amount, transaction_type', (
+    'user, start_date, end_date', (
         pytest.param(
-            1,
-            1,
-            TransactionType.buy,
-            id='valid atributes BUY',
-        ),
-        pytest.param(
-            1,
-            1,
-            TransactionType.sell,
-            id='valid atributes SELL',
-        ),
-    ),
-)
-def test_create_transaction_raises(
-    user_id, amount, transaction_type, service,
-):
-    """Тест метода create_transaction в случае ошибки в репозитории."""
-    service.repository.create_transaction = repository_error
-    with pytest.raises(RepositoryError):
-        service.create_transaction(
-            user_id, amount, transaction_type,
-        )
-
-
-@pytest.mark.parametrize(
-    'user_id, start_date, end_date', (
-        pytest.param(
-            1,
+            user_positive_balance,
             datetime.now(),
             datetime.now() + timedelta(days=1),
             id='valid atributes',
         ),
         pytest.param(
-            '1',
-            datetime.now(),
-            datetime.now() + timedelta(days=1),
-            id='invalid user ID',
-            marks=pytest.mark.xfail(raises=ValueError),
-        ),
-        pytest.param(
-            1,
+            user_positive_balance,
             datetime.now(),
             datetime.now() - timedelta(days=1),
             id='invalid period',
             marks=pytest.mark.xfail(raises=ValueError),
         ),
         pytest.param(
-            1,
-            str(datetime.now()),
+            user_positive_balance,
+            'invalid',
             datetime.now() + timedelta(days=1),
             id='invalid start date',
-            marks=pytest.mark.xfail(raises=ValueError),
+            marks=pytest.mark.xfail(raises=pydantic.ValidationError),
         ),
         pytest.param(
-            1,
+            user_positive_balance,
             datetime.now(),
-            str(datetime.now() + timedelta(days=1)),
+            'invalid',
             id='invalid end date',
-            marks=pytest.mark.xfail(raises=ValueError),
+            marks=pytest.mark.xfail(raises=pydantic.ValidationError),
         ),
     ),
 )
-def test_create_transaction_report(
-    user_id, start_date, end_date, service,
+async def test_create_transaction_report_without_cache(
+    user: User, start_date, end_date, service,
 ):
     """Тест метода create_transaction_report."""
+    request = TransactionReportRequest(
+        username=user.username,
+        start_date=start_date,
+        end_date=end_date,
+    )
     expected_transaction = Transaction(
-        1, 1, TransactionType.buy, datetime.now(), 1,
+        username=user.username,
+        amount=amount,
+        transaction_type=TransactionType.deposit,
+        timestamp=datetime.now() + timedelta(hours=1),
+        transaction_id=1,
     )
 
     expected_report = TransactionReport(
-        1,
-        1,
-        datetime.now(),
-        datetime.now() + timedelta(days=1),
-        [expected_transaction],
+        report_id=0,
+        user_id=user.username,
+        start_date=start_date,
+        end_date=end_date,
+        transanctions=[expected_transaction],
     )
 
     service.repository.create_transaction_report.return_value = expected_report
-    report = service.create_transaction_report(
-        user_id, start_date, end_date,
+    report = await service.create_transaction_report(
+        request,
     )
     assert report == expected_report
-
-
-@pytest.mark.parametrize(
-    'user_id, start_date, end_date', (
-        pytest.param(
-            1,
-            datetime.now(),
-            datetime.now() + timedelta(days=1),
-            id='valid atributes',
-        ),
-    ),
-)
-def test_create_transaction_report_raises(
-    user_id, start_date, end_date, service,
-):
-    """Тест метода create_transaction_report в случае ошибки репозитория."""
-    service.repository.create_transaction_report = repository_error
-    with pytest.raises(RepositoryError):
-        service.create_transaction_report(
-            user_id, start_date, end_date,
-        )

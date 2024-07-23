@@ -1,41 +1,45 @@
 from collections import namedtuple
+from app.core.errors import ValidationError
 from datetime import datetime, timedelta
+from decimal import Decimal
 
 import pytest
 
-from app.core.transactions import Transaction, TransactionType
+from app.core.models import Transaction, TransactionType, User, TransactionRequest, TransactionReportRequest, TransactionReport
 
 
+user_positive_balance = User(
+    username='george', balance=Decimal(1), is_verified=False, user_id=1,
+)
+user_zero_balance = User(
+    username='george', balance=Decimal(0), is_verified=False, user_id=1,
+)
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
-    'user_id, amount, transaction_type', (
+    'user, amount, transaction_type', (
         pytest.param(
+            user_positive_balance,
             1,
-            1,
-            TransactionType.buy,
-            id='valid atributes BUY',
+            TransactionType.withdraw,
+            id='valid atributes withdraw',
         ),
         pytest.param(
+            user_positive_balance,
             1,
-            1,
-            TransactionType.sell,
-            id='valid atributes SELL',
+            TransactionType.deposit,
+            id='valid atributes deposit',
         ),
         pytest.param(
-            '1',
+            user_zero_balance,
             1,
-            TransactionType.buy,
-            id='invalid user ID',
-            marks=pytest.mark.xfail(raises=ValueError),
-        ),
-        pytest.param(
-            1,
-            -1,
-            TransactionType.buy,
+            TransactionType.withdraw,
             id='invalid amount',
-            marks=pytest.mark.xfail(raises=ValueError),
+            marks=pytest.mark.xfail(raises=ValidationError),
         ),
         pytest.param(
-            1,
+            user_positive_balance,
             1,
             'BUY',
             id='invalid transaction type',
@@ -43,127 +47,109 @@ from app.core.transactions import Transaction, TransactionType
         ),
     ),
 )
-def test_create_transaction(user_id, amount, transaction_type, service):
+async def test_create_transaction(
+    user: User, amount, transaction_type, service,
+):
     """Тест метода create_transaction."""
-    transaction = service.create_transaction(
-        user_id, amount, transaction_type,
+    await service.repository.create_user(user)
+
+    expected_transaction = Transaction(
+        username=user.username,
+        amount=amount,
+        transaction_type=transaction_type,
+        timestamp=datetime.now(),
+        transaction_id=1,
     )
+    request = TransactionRequest(
+        username=user.username,
+        amount=amount,
+        transaciton_type=transaction_type,
+    )
+    transaction = await service.create_transaction(request)
     assert len(service.repository.transactions) == 1
-    assert transaction.user_id == 1
-    assert transaction.amount == 1
-    assert transaction.transacton_type in {
-        TransactionType.buy,
-        TransactionType.sell,
-    }
-
-
-Period = namedtuple('Period', 'start, end')
+    assert transaction.username == expected_transaction.username
+    assert transaction.amount == expected_transaction.amount
+    assert transaction.transaction_type == expected_transaction.transaction_type
 
 
 class TestCreateTransactionReport:
     """Тесты метода create_transaction_report."""
 
+    username = 'george'
+    amount = Decimal(1)
     date = {'year': 2024, 'month': 1, 'day': 1}
-    user_id = 1
-    amount = 1
     base_date = datetime(
         year=date['year'], month=date['month'], day=date['day'],
     )
     empty_report_lenght = 0
     transactions_in_db = [
         Transaction(
-            user_id, amount, TransactionType.buy, base_date, 1,
+            username=username,
+            amount=amount,
+            transaction_type=TransactionType.withdraw,
+            timestamp=base_date,
+            transaction_id=1,
         ),
         Transaction(
-            user_id,
-            amount,
-            TransactionType.buy,
-            base_date + timedelta(days=1),
-            2,
+            username=username,
+            amount=amount,
+            transaction_type=TransactionType.withdraw,
+            timestamp=base_date + timedelta(days=1),
+            transaction_id=2,
         ),
     ]
 
     @pytest.fixture
-    def service_with_transactions_in_db(self, service):
+    def service_with_transactions(self, service):
         """Фикстура для создания сервиса с транзакциями в базе данных."""
         service.repository.transactions = self.transactions_in_db
         return service
 
+    @pytest.mark.asyncio
     @pytest.mark.parametrize(
-        'user_id, period, expected_tran_qnt', (
+        'report_request, expected_tran_qnt', (
             pytest.param(
-                user_id,
-                Period(
-                    base_date - timedelta(days=2),
-                    datetime.now() + timedelta(days=2),
+                TransactionReportRequest(
+                    username=username,
+                    start_date=base_date - timedelta(days=2),
+                    end_date=datetime.now() + timedelta(days=2),
                 ),
                 len(transactions_in_db),
                 id='transactions in period = 2',
             ),
             pytest.param(
-                user_id,
-                Period(
-                    base_date + timedelta(days=2),
-                    datetime.now() + timedelta(days=4),
+                TransactionReportRequest(
+                    username=username,
+                    start_date=base_date + timedelta(days=2),
+                    end_date=datetime.now() + timedelta(days=4),
                 ),
                 empty_report_lenght,
                 id='transactions in period = 0',
             ),
             pytest.param(
-                1,
-                Period(
-                    datetime.now(),
-                    datetime.now() - timedelta(days=1),
+                TransactionReportRequest(
+                    username=username,
+                    start_date=datetime.now(),
+                    end_date=datetime.now() - timedelta(days=1),
                 ),
                 empty_report_lenght,
                 id='invalid period',
                 marks=pytest.mark.xfail(raises=ValueError),
             ),
-            pytest.param(
-                1,
-                Period(
-                    str(datetime.now()),
-                    datetime.now() + timedelta(days=1),
-                ),
-                empty_report_lenght,
-                id='invalid start date',
-                marks=pytest.mark.xfail(raises=ValueError),
-            ),
-            pytest.param(
-                1,
-                Period(
-                    datetime.now(),
-                    str(datetime.now() + timedelta(days=1)),
-                ),
-                empty_report_lenght,
-                id='invalid end date',
-                marks=pytest.mark.xfail(raises=ValueError),
-            ),
-            pytest.param(
-                '1',
-                Period(
-                    datetime.now(),
-                    datetime.now() + timedelta(days=1),
-                ),
-                empty_report_lenght,
-                id='invalid user id',
-                marks=pytest.mark.xfail(raises=ValueError),
-            ),
         ),
     )
-    def test_create_transaction_report(
+    async def test_create_transaction_report(
         self,
-        user_id,
-        period,
+        report_request: TransactionReportRequest,
         expected_tran_qnt,
-        service_with_transactions_in_db,
+        service_with_transactions,
     ):
         """Тест метода create_transaction_report."""
-        report = service_with_transactions_in_db.create_transaction_report(
-            user_id, period.start, period.end,
+        report = await service_with_transactions.create_transaction_report(
+            report_request,
         )
 
         assert len(report.transanctions) == expected_tran_qnt
-        assert report.start_date == period.start
-        assert report.end_date == period.end
-        assert report.user_id == user_id
+        assert report.start_date == report_request.start_date
+        assert report.end_date == report_request.end_date
+        assert report.user_id == report_request.username

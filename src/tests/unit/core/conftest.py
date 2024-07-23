@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock
 
 import pytest
 
@@ -16,7 +16,7 @@ def service():
     :return: экземпляр сервиса
     :rtype: TransactionService
     """
-    repository = MagicMock()
+    repository = AsyncMock()
     return TransactionService(repository)
 
 
