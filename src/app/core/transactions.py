@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 
-from app.core.errors import RepositoryError, ValidationError
+from app.core.errors import NotFoundError, RepositoryError
 from app.core.interfaces import Cache, Repository
 from app.core.models import (
     Transaction,
@@ -138,14 +138,14 @@ class TransactionService:
         :return: объект транзакции
         :rtype: Transaction
         :raises RepositoryError: при ошибке доступа к данным
-        :raises ValidationError: при ошибке валидации данных
+        :raises NotFoundError: если данные не найдены
         """
         user = await self.repository.get_user(transaction_request.username)
         if not user:
             logger.warning(
                 f'Пользователь {transaction_request.username} не найден',
             )
-            raise ValidationError(
+            raise NotFoundError(
                 f'Пользователь {transaction_request.username} не найден',
             )
         user.validate_transaciton(transaction_request)

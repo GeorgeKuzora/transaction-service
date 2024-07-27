@@ -11,5 +11,9 @@ class ValidationError(Exception):
     """Исключение при валидации данных."""
 
 
+class NotFoundError(Exception):
+    """Исключение если данные не найдены."""
+
+
 class CacheError(Exception):
     """Ошибка в кэше."""
