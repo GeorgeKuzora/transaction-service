@@ -4,7 +4,7 @@ from decimal import Decimal
 import pydantic
 import pytest
 
-from app.core.errors import ValidationError
+from app.core.errors import NotFoundError, RepositoryError, ValidationError
 from app.core.models import (
     Transaction,
     TransactionReport,
@@ -185,6 +185,41 @@ async def test_create_transaction(user, amount, transaction_type, service):
     service.repository.create_transaction.return_value = expected_transaction
     transaction = await service.create_transaction(request)
     assert transaction == expected_transaction
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    'user, amount, transaction_type, service_fixture', (
+        pytest.param(
+            user_positive_balance,
+            amount,
+            TransactionType.withdraw,
+            'service_error_on_get_user',
+            id='user not found',
+            marks=pytest.mark.xfail(raises=NotFoundError),
+        ),
+        pytest.param(
+            user_positive_balance,
+            amount,
+            TransactionType.withdraw,
+            'service_error_on_update_user',
+            id='repository error',
+            marks=pytest.mark.xfail(raises=RepositoryError),
+        ),
+    ),
+)
+async def test_create_transaction_not_found_error(
+    user, amount, transaction_type, service_fixture, request,
+):
+    """Тест метода create_transaction."""
+    service = request.getfixturevalue(service_fixture)
+    transaction_request = TransactionRequest(
+        username=user.username,
+        amount=amount,
+        transaciton_type=transaction_type,
+    )
+    service.repository.get_user.return_value = user
+    await service.create_transaction(transaction_request)
 
 
 @pytest.mark.asyncio

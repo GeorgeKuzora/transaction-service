@@ -3,7 +3,7 @@ from decimal import Decimal
 
 import pytest
 
-from app.core.errors import ValidationError
+from app.core.errors import NotFoundError, ValidationError
 from app.core.models import (
     Transaction,
     TransactionReportRequest,
@@ -74,6 +74,30 @@ async def test_create_transaction(
     assert transaction.username == expected_transaction.username
     assert transaction.amount == expected_transaction.amount
     assert transaction.transaction_type == expected_transaction.transaction_type
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    'user, amount, transaction_type', (
+        pytest.param(
+            user_positive_balance,
+            1,
+            TransactionType.withdraw,
+            id='user not found',
+        ),
+    ),
+)
+async def test_create_transaction_raises(
+    user: User, amount, transaction_type, service,
+):
+    """create_transaction поднимает ошибку если пользоатель не найден."""
+    request = TransactionRequest(
+        username=user.username,
+        amount=amount,
+        transaciton_type=transaction_type,
+    )
+    with pytest.raises(NotFoundError):
+        await service.create_transaction(request)
 
 
 class TestCreateTransactionReport:
