@@ -273,7 +273,7 @@ async def test_create_transaction_report_without_cache(
 
     expected_report = TransactionReport(
         report_id=0,
-        user_id=user.username,
+        username=user.username,
         start_date=start_date,
         end_date=end_date,
         transanctions=[expected_transaction],

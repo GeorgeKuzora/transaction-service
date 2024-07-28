@@ -128,8 +128,26 @@ class TestCreateTransactionReport:
     ]
 
     @pytest.fixture
-    def service_with_transactions(self, service):
-        """Фикстура для создания сервиса с транзакциями в базе данных."""
+    def service_with_transactions_without_cache(self, service):
+        """Фикстура для создания сервиса без кэша."""
+        service.repository.transactions = self.transactions_in_db
+        return service
+
+    @pytest.fixture
+    def service_with_transactions_with_cache(self, service_with_cache):
+        """Фикстура для создания сервиса без кэша."""
+        service_with_cache.repository.transactions = self.transactions_in_db
+        return service_with_cache
+
+    @pytest.fixture(
+        params=[
+            'service_with_transactions_without_cache',
+            'service_with_transactions_with_cache',
+        ],
+    )
+    def service_with_transactions(self, request):
+        """Фикстура для создания сервиса с транзакциями."""
+        service = request.getfixturevalue(request.param)
         service.repository.transactions = self.transactions_in_db
         return service
 
@@ -180,4 +198,4 @@ class TestCreateTransactionReport:
         assert len(report.transanctions) == expected_tran_qnt
         assert report.start_date == report_request.start_date
         assert report.end_date == report_request.end_date
-        assert report.user_id == report_request.username
+        assert report.username == report_request.username
