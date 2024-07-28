@@ -1,4 +1,4 @@
-from typing import Any, Protocol
+from typing import Protocol
 
 from app.core.models import (
     Transaction,
@@ -67,20 +67,22 @@ class Repository(Protocol):
 class Cache(Protocol):
     """Интерфейс кэша сервиса."""
 
-    async def get_cache(self, cached_value: Any) -> TransactionReport | None:
+    async def get_cache(
+        self, cache_value: TransactionReportRequest,
+    ) -> TransactionReport | None:
         """
         Получает значение из кэша.
 
-        :param cached_value: Кэшированное значение
-        :type cached_value: Any
+        :param cache_value: Кэшированное значение
+        :type cache_value: TransactionReport
         """
         ...  # noqa: WPS428 valid protocol syntax
 
-    async def create_cache(self, cached_value: Any) -> None:
+    async def create_cache(self, cache_value: TransactionReport) -> None:
         """
         Записывает значение в кэш.
 
-        :param cached_value: Кэшируемое значение
-        :type cached_value: Any
+        :param cache_value: Кэшируемое значение
+        :type cache_value: TransactionReport
         """
         ...  # noqa: WPS428 valid protocol syntax

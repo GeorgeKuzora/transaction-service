@@ -86,7 +86,7 @@ class InMemoryRepository:
 
         report = TransactionReport(
             report_id=self.reports_count,
-            user_id=request.username,
+            username=request.username,
             start_date=request.start_date,
             end_date=request.end_date,
             transanctions=filtered_transactions,

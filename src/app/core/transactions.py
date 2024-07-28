@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from datetime import datetime
 
@@ -137,7 +138,6 @@ class TransactionService:
         :type transaction_request: TransactionRequest
         :return: объект транзакции
         :rtype: Transaction
-        :raises RepositoryError: при ошибке доступа к данным
         :raises NotFoundError: если данные не найдены
         """
         user = await self.repository.get_user(transaction_request.username)
@@ -150,35 +150,22 @@ class TransactionService:
             )
         user.validate_transaciton(transaction_request)
 
-        timestamp = datetime.now()
-
         transaction = Transaction(
             username=transaction_request.username,
             amount=transaction_request.amount,
             transaction_type=transaction_request.transaciton_type,
-            timestamp=timestamp,
+            timestamp=datetime.now(),
         )
 
         user.process_transacton(transaction)
-
-        try:
-            await self.repository.update_user(user)
-        except RepositoryError as user_err:
-            logger.error(
-                f"Can't update user {user}",
-            )
-            raise RepositoryError(
-                f"Can't update user {user}",
-            ) from user_err
-        try:
-            return await self.repository.create_transaction(transaction)
-        except RepositoryError as transaction_err:
-            logger.error(
-                f"Can't create transaction {transaction}",
-            )
-            raise RepositoryError(
-                f"Can't create transaction {transaction}",
-            ) from transaction_err
+        update_user_task = asyncio.create_task(
+            self.repository.update_user(user),
+        )
+        create_transaction_task = asyncio.create_task(
+            self.repository.create_transaction(transaction),
+        )
+        await update_user_task
+        return await create_transaction_task
 
     async def create_transaction_report(
         self,

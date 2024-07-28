@@ -35,7 +35,7 @@ class Transaction(BaseModel):
 
     Attributes:
         transaction_id: int | None - ID транзакции
-        user_id: int - ID пользователя.
+        username: str - ID пользователя.
         amount: int - сумма транзакции.
         transaction_type: bool - тип транзации. True-продажа, False-покупка.
         timestamp: datetime - временная метка транзакции.
@@ -62,14 +62,14 @@ class TransactionReport(BaseModel):
 
     Attributes:
         report_id: int - ID отчета о транзакциях
-        user_id: int - ID пользователя.
+        username: int - ID пользователя.
         start_date: datetime - дата начала периода отчета
         end_date: datetime - дата конца периода отчета.
         transactions: list[Transaction] - список транзакций за период.
     """
 
     report_id: int
-    user_id: str
+    username: str
     start_date: datetime
     end_date: datetime
     transanctions: list[Transaction]
