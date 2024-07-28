@@ -1,7 +1,11 @@
 import logging
-from datetime import datetime
 
-from app.core.transactions import Transaction, TransactionReport
+from app.core.models import (
+    Transaction,
+    TransactionReport,
+    TransactionReportRequest,
+    User,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -26,8 +30,10 @@ class InMemoryRepository:
         self.transactions_count: int = 0
         self.reports: list[TransactionReport] = []
         self.reports_count: int = 0
+        self.users: list[User] = []
+        self.users_count: int = 0
 
-    def create_transaction(self, transaction: Transaction) -> Transaction:
+    async def create_transaction(self, transaction: Transaction) -> Transaction:
         """
         Создает запись о транзакции и возвращает ее.
 
@@ -41,21 +47,21 @@ class InMemoryRepository:
         :rtype: Transaction
         """
         indexed_transaction = Transaction(
-            user_id=transaction.user_id,
+            username=transaction.username,
             amount=transaction.amount,
-            transacton_type=transaction.transacton_type,
+            transaction_type=transaction.transaction_type,
             timestamp=transaction.timestamp,
             transaction_id=self.transactions_count,
         )
 
-        self.transactions_count += 1
         self.transactions.append(indexed_transaction)
+        self.transactions_count += 1
         logger.info(f'created {transaction}')
 
         return indexed_transaction
 
-    def create_transaction_report(
-        self, user_id: int, start_date: datetime, end_date: datetime,
+    async def create_transaction_report(
+        self, request: TransactionReportRequest,
     ) -> TransactionReport:
         """
         Создает отчет о транзакциях пользователя за период.
@@ -64,29 +70,25 @@ class InMemoryRepository:
         ID пользователя, дат начала и конца периода. Сохраняет отчет
         в список, возвращает отчет.
 
-        :param user_id: ID пользователя.
-        :type user_id: int
-        :param start_date: дата начала периода
-        :type start_date: datetime
-        :param end_date: дата окончания периода
-        :type end_date: datetime
+        :param request: Запрос отчета
+        :type request: TransactionReportRequest
         :return: отчет о транзакциях пользователя
         :rtype: TransactionReport
         """
         filtered_transactions = [
             in_transaction for in_transaction in self.transactions if (
-                in_transaction.user_id == user_id and
-                start_date.date() <=
+                in_transaction.username == request.username and
+                request.start_date.date() <=
                 in_transaction.timestamp.date() <=
-                end_date.date()
+                request.end_date.date()
             )
         ]
 
         report = TransactionReport(
             report_id=self.reports_count,
-            user_id=user_id,
-            start_date=start_date,
-            end_date=end_date,
+            username=request.username,
+            start_date=request.start_date,
+            end_date=request.end_date,
             transanctions=filtered_transactions,
         )
 
@@ -95,3 +97,77 @@ class InMemoryRepository:
         logger.info(f'created{report}')
 
         return report
+
+    async def update_user(
+        self, user: User,
+    ) -> User | None:
+        """
+        Создает пользователя в базе данных.
+
+        Создает, сохраняет в базе данных
+        и возвращает индексированную запись о пользователе.
+
+        :param user: Пользователь
+        :type user: User
+        :return: индексированная запись о пользователе.
+        :rtype: User
+        """
+        user_in_db = await self.get_user(user.username)
+
+        if user_in_db is None:
+            user_in_db = await self.create_user(user)
+            logger.info(f'Created user {user_in_db}')
+            return user_in_db
+
+        user_position = self.users.index(user_in_db)
+        user.user_id = user_in_db.user_id
+        self.users[user_position] = user
+        logger.info(f'Updated {user}')
+        return user
+
+    async def create_user(self, user: User) -> User:
+        """
+        Создает пользователя в базе данных.
+
+        Создает, сохраняет в базе данных
+        и возвращает индексированную запись о пользователе.
+
+        :param user: неидексированная запись о пользователе.
+        :type user: User
+        :return: индексированная запись о пользователе.
+        :rtype: User
+        """
+        indexed_user = User(
+            username=user.username,
+            balance=user.balance,
+            is_verified=user.is_verified,
+            user_id=self.users_count,
+        )
+        self.users.append(indexed_user)
+        self.users_count += 1
+        logger.info(f'Created user {indexed_user}')
+        return indexed_user
+
+    async def get_user(self, username: str) -> User | None:
+        """
+        Получает пользователя из базы данных.
+
+        Получает и возвращает запись о пользователе из базы данных.
+
+        :param username: Имя пользователя
+        :type username: str
+        :return: индексированная запись о пользователе.
+        :rtype: User
+        """
+        try:
+            in_db_user = [
+                member for member in self.users if (
+                    member.username == username
+                )
+            ][0]
+        except IndexError:
+            logger.warning(f'{username} is not found')
+            return None
+
+        logger.info(f'got {in_db_user}')
+        return in_db_user

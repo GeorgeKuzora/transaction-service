@@ -1,12 +1,15 @@
 [tool.poetry]
 name = "transaction-service"
-version = "0.1.0"
+version = "0.2.0"
 description = ""
 authors = ["Georgiy Kuzora <georgiy@kuzora.ru>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.12"
+fastapi = "0.111.1"
+pydantic-settings = "2.3.4"
+pyyaml = "6.0.1"
 
 [tool.poetry.group.dev.dependencies]
 wemake-python-styleguide = "^0.19.2"
@@ -15,6 +18,8 @@ mypy = "^1.10.1"
 coverage = "*"
 coverage-conditional-plugin = "*"
 pytest-cov = "*"
+anyio = { version = "^4.4.0", extras = ["trio"] }
+pytest-asyncio = "*"
 
 [build-system]
 requires = ["poetry-core"]
