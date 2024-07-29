@@ -98,3 +98,27 @@
 `unit/` — каталог с юнит-тестами проекта.
 `test_transactions.py` — файл с тестами сервиса транзакций.
 `test_service.py` — файл с тестом проекта.
+`Dockerfile` — файл для создания образа Docker контейнера.
+`.dockerignore` — файл для игнорирования файлов и директорий в ходе сборки Docker контейнера.
+
+## Запуск приложения в Docker контейнере
+
+Для приложения создан [Dockerfile](./Dockerfile).
+
+Для запуска приложения в Docker контейнере необходимо:
+
+Установить Docker Desktop для MacOS/Windows или просто docker для Linux. [Docker Desktop](https://www.docker.com/products/docker-desktop/).
+
+Выполнить команду `docker build` для сборки образа контейнера:
+
+```shell
+docker build -t transaction-service:latest .
+```
+
+Для создания и запуска контейнера выполните команду `docker run`:
+
+```shell
+docker run --name transaction-service -p 127.0.0.1:8082:8000 face-verification
+```
+
+Приложение будет доступно на порту `127.0.0.1:8082`.
