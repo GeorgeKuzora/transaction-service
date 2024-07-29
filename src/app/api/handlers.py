@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-from fastapi import HTTPException, status
+from fastapi import APIRouter, HTTPException, status
 
 from app.core.errors import RepositoryError, ValidationError
 from app.core.models import (
@@ -12,12 +12,13 @@ from app.core.models import (
 )
 from app.core.transactions import TransactionService
 from app.external.in_memory_repository import InMemoryRepository
-from app.service import app
 
 logger = logging.getLogger(__name__)
 
+router = APIRouter()
 
-@app.post('/create_transaction', status_code=status.HTTP_200_OK)
+
+@router.post('/create_transaction', status_code=status.HTTP_200_OK)
 async def create_transaction(
     transaction_request: TransactionRequest,
 ) -> Transaction:
@@ -42,7 +43,7 @@ async def create_transaction(
         ) from err
 
 
-@app.post('/create_report', status_code=status.HTTP_200_OK)
+@router.post('/create_report', status_code=status.HTTP_200_OK)
 async def create_report(
     report_request: TransactionReportRequest,
 ) -> TransactionReport:

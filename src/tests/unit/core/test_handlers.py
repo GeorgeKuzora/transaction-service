@@ -2,7 +2,7 @@ import pytest
 from fastapi import status
 from httpx import AsyncClient
 
-from app.api.handlers import app
+from app.service import app
 
 
 class TestCreateTransaction:
