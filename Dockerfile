@@ -3,7 +3,8 @@ FROM python:3.12.4-slim-bookworm AS base
 LABEL maintainer="georgiy@kuzora.ru"
 
 ARG APP_PATH=/app \
-    SOURCE_PATH=$APP_PATH/src
+    SOURCE_PATH=$APP_PATH/src \
+    CONFIG_DIR_PATH=$SOURCE_PATH/config
 
 WORKDIR $APP_PATH
 
@@ -29,9 +30,9 @@ COPY ./pyproject.toml ./poetry.lock ./
 RUN poetry install --only main --all-extras --compile --no-root
 
 ENV PYTHONPATH=$SOURCE_PATH \
-    CONFIG_PATH=$SOURCE_PATH/config/config-local.yml
+    CONFIG_PATH=$CONFIG_DIR_PATH/config-local.yml
 
-COPY src .
+COPY src ./src
 
 EXPOSE 8000
 
