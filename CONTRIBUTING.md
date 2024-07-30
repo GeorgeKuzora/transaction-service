@@ -118,7 +118,7 @@ docker build -t transaction-service:latest .
 Для создания и запуска контейнера выполните команду `docker run`:
 
 ```shell
-docker run --name transaction-service -p 127.0.0.1:8082:8000 face-verification
+docker run --name transaction-service -p 127.0.0.1:8082:8000 transaction-serivce
 ```
 
 Приложение будет доступно на порту `127.0.0.1:8082`.
