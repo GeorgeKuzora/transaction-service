@@ -42,6 +42,11 @@ async def create_transaction(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
         ) from v_err
+    except ValueError as v_err:
+        logger.info(f'транзакция {transaction_request} неверный формат')
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+        ) from v_err
     except ServerError as err:
         logger.error('Неизвестная ошибка сервера')
         raise HTTPException(
@@ -63,4 +68,9 @@ async def create_report(
         logger.error('Ошибка сервера')
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+        ) from r_err
+    except ValueError as r_err:
+        logger.error(f'Переданное значение неверно {report_request}')
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         ) from r_err
