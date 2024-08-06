@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime
-from decimal import Decimal
 from enum import Enum
 
 from pydantic import BaseModel
@@ -25,7 +24,7 @@ class TransactionRequest(BaseModel):
     """Запрос создания транзакции."""
 
     username: str
-    amount: Decimal | float
+    amount: float
     transaction_type: TransactionType
 
 
@@ -42,7 +41,7 @@ class Transaction(BaseModel):
     """
 
     username: str
-    amount: Decimal | float
+    amount: float
     transaction_type: TransactionType
     timestamp: datetime
     transaction_id: int | None = None
@@ -80,7 +79,7 @@ class User(BaseModel):
 
     user_id: int | None = None
     username: str
-    balance: Decimal | float
+    balance: float
     is_verified: bool
 
     def validate_transaction(
@@ -98,7 +97,7 @@ class User(BaseModel):
             validation_result = valid
         if not validation_result:
             logger.info(f'Баланс пользователя {transaction_request.username} не может быть отрицательным')  # noqa: E501
-            raise ValidationError(f'Баланс пользователя {transaction_request.username} не может быть отрицательным')  # noqa: E501
+            raise ValidationError(detail=f'Баланс пользователя {transaction_request.username} не может быть отрицательным')  # noqa: E501
 
     def process_transacton(self, transaction: Transaction):
         """Производит изменение баланса пользователя."""

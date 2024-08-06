@@ -72,4 +72,3 @@ class NotFoundError(HTTPException):
         """
         self.status_code = status_code
         self.detail = detail
-

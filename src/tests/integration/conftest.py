@@ -1,11 +1,11 @@
 import pytest
 from httpx import AsyncClient
-from app.service import app
 
+from app.core.models import TransactionRequest, User
 from app.core.transactions import TransactionService
 from app.external.in_memory_repository import InMemoryRepository
 from app.external.redis import TransactionReportCache
-from app.core.models import User, TransactionRequest
+from app.service import app
 
 
 @pytest.fixture(scope='session')
@@ -57,6 +57,7 @@ def service_with_user_fixture(service_with_cache: TransactionService):
         return service_with_cache
     return _service_with_cache_fixture
 
+
 @pytest.fixture
 def service_with_transactions_fixture(
     service_with_user_fixture,
@@ -94,11 +95,9 @@ def service_mocker(monkeypatch):
     :return: Функция мокирования
     :rtype: Callable
     """
-    def _service_mocker(service: TransactionService):  # noqa: WPS430 need for params
+    def _service_mocker(service: TransactionService):  # noqa: WPS430, E501 need for params
         monkeypatch.setattr(
             'app.api.handlers.service',
             service,
         )
     return _service_mocker
-
-

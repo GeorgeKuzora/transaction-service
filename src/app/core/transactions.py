@@ -2,7 +2,7 @@ import asyncio
 import logging
 from datetime import datetime
 
-from app.core.errors import NotFoundError, RepositoryError
+from app.core.errors import NotFoundError, RepositoryError, ValidationError
 from app.core.interfaces import Cache, Repository
 from app.core.models import (
     Transaction,
@@ -11,7 +11,6 @@ from app.core.models import (
     TransactionRequest,
     TransactionType,
 )
-from app.core.errors import ValidationError
 
 logger = logging.getLogger(__name__)
 

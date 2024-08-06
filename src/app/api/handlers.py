@@ -3,7 +3,7 @@ import logging
 
 from fastapi import APIRouter, HTTPException, status
 
-from app.core.errors import RepositoryError, ValidationError, ServerError
+from app.core.errors import ServerError, ValidationError
 from app.core.models import (
     Transaction,
     TransactionReport,

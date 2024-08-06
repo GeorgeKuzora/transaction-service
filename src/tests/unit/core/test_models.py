@@ -1,5 +1,4 @@
 from datetime import datetime
-from decimal import Decimal
 
 import pytest
 
@@ -8,19 +7,19 @@ from app.core.models import Transaction, TransactionType, User
 username = 'george'
 
 deposit_transaction = Transaction(
-    amount=Decimal(10),
+    amount=10,
     username=username,
     transaction_type=TransactionType.deposit,
     timestamp=datetime.now(),
 )
 withdraw_transaction = Transaction(
-    amount=Decimal(10),
+    amount=10,
     username=username,
     transaction_type=TransactionType.withdraw,
     timestamp=datetime.now(),
 )
-balance_after_deposit = Decimal(20)  # noqa: WPS432 no magic
-balance_after_withdraw = Decimal(0)
+balance_after_deposit = 20  # noqa: WPS432 no magic
+balance_after_withdraw = 0
 
 
 @pytest.fixture
@@ -28,7 +27,7 @@ def test_user():
     """Ооздает пользователя."""
     return User(
         username=username,
-        balance=Decimal(10),
+        balance=10,
         is_verified=True,
     )
 

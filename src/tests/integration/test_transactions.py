@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from decimal import Decimal
 
 import pytest
 
@@ -13,10 +12,10 @@ from app.core.models import (
 )
 
 user_positive_balance = User(
-    username='george', balance=Decimal(1), is_verified=False, user_id=1,
+    username='george', balance=1, is_verified=False, user_id=1,
 )
 user_zero_balance = User(
-    username='george', balance=Decimal(0), is_verified=False, user_id=1,
+    username='george', balance=0, is_verified=False, user_id=1,
 )
 
 
@@ -104,7 +103,7 @@ class TestCreateTransactionReport:
     """Тесты метода create_transaction_report."""
 
     username = 'george'
-    amount = Decimal(1)
+    amount = 1
     date = {'year': 2024, 'month': 1, 'day': 1}
     base_date = datetime(
         year=date['year'], month=date['month'], day=date['day'],

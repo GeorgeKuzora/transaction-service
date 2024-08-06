@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from decimal import Decimal
 
 import pydantic
 import pytest
@@ -128,12 +127,12 @@ class TestValidator:
 
 
 user_positive_balance = User(
-    username='george', user_id=1, balance=Decimal(1), is_verified=False,
+    username='george', user_id=1, balance=1, is_verified=False,
 )
 user_zero_balance = User(
-    username='george', user_id=1, balance=Decimal(0), is_verified=False,
+    username='george', user_id=1, balance=0, is_verified=False,
 )
-amount = Decimal(1)
+amount = 1
 
 
 @pytest.mark.asyncio
