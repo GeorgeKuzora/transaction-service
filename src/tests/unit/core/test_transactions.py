@@ -179,7 +179,7 @@ async def test_create_transaction(user, amount, transaction_type, service):
     request = TransactionRequest(
         username=user.username,
         amount=amount,
-        transaciton_type=transaction_type,
+        transaction_type=transaction_type,
     )
     service.repository.get_user.return_value = user
     service.repository.create_transaction.return_value = expected_transaction
@@ -216,7 +216,7 @@ async def test_create_transaction_not_found_error(
     transaction_request = TransactionRequest(
         username=user.username,
         amount=amount,
-        transaciton_type=transaction_type,
+        transaction_type=transaction_type,
     )
     service.repository.get_user.return_value = user
     await service.create_transaction(transaction_request)

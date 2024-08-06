@@ -67,7 +67,7 @@ async def test_create_transaction(
     request = TransactionRequest(
         username=user.username,
         amount=amount,
-        transaciton_type=transaction_type,
+        transaction_type=transaction_type,
     )
     transaction = await service.create_transaction(request)
     assert len(service.repository.transactions) == 1
@@ -94,7 +94,7 @@ async def test_create_transaction_raises(
     request = TransactionRequest(
         username=user.username,
         amount=amount,
-        transaciton_type=transaction_type,
+        transaction_type=transaction_type,
     )
     with pytest.raises(NotFoundError):
         await service.create_transaction(request)

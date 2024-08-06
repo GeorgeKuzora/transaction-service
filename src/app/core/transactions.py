@@ -146,14 +146,14 @@ class TransactionService:
                 f'Пользователь {transaction_request.username} не найден',
             )
             raise NotFoundError(
-                f'Пользователь {transaction_request.username} не найден',
+                detail=f'Пользователь {transaction_request.username} не найден',
             )
         user.validate_transaciton(transaction_request)
 
         transaction = Transaction(
             username=transaction_request.username,
             amount=transaction_request.amount,
-            transaction_type=transaction_request.transaciton_type,
+            transaction_type=transaction_request.transaction_type,
             timestamp=datetime.now(),
         )
 
@@ -211,7 +211,7 @@ class TransactionService:
         if report:
             return report
         logger.error('ошибка хранилища данных')
-        raise RepositoryError('ошибка хранилища данных')
+        raise RepositoryError(detail='ошибка хранилища данных')
 
     async def _create_transaction_report_without_cache(
         self, request: TransactionReportRequest,

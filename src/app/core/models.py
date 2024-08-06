@@ -25,8 +25,8 @@ class TransactionRequest(BaseModel):
     """Запрос создания транзакции."""
 
     username: str
-    amount: Decimal
-    transaciton_type: TransactionType
+    amount: Decimal | float
+    transaction_type: TransactionType
 
 
 class Transaction(BaseModel):
@@ -42,7 +42,7 @@ class Transaction(BaseModel):
     """
 
     username: str
-    amount: Decimal
+    amount: Decimal | float
     transaction_type: TransactionType
     timestamp: datetime
     transaction_id: int | None = None
@@ -80,7 +80,7 @@ class User(BaseModel):
 
     user_id: int | None = None
     username: str
-    balance: Decimal
+    balance: Decimal | float
     is_verified: bool
 
     def validate_transaciton(
@@ -90,7 +90,7 @@ class User(BaseModel):
         valid = True
         invalid = False
         validation_result = invalid
-        if transaction_request.transaciton_type == TransactionType.deposit:
+        if transaction_request.transaction_type == TransactionType.deposit:
             validation_result = valid
         elif self.balance - transaction_request.amount >= 0:
             validation_result = valid
