@@ -23,33 +23,33 @@ class Literals(StrEnum):
 verified_user = User(
     user_id=1,
     username=Literals.george,
-    balance=1.0,
+    balance=1,
     is_verified=True,
 )
 not_verified_user = User(
     user_id=1,
     username=Literals.george,
-    balance=1.0,
+    balance=1,
     is_verified=False,
 )
 valid_transaction_request = {
     Literals.username: Literals.george,
-    Literals.amount: 1.0,
+    Literals.amount: 1,
     Literals.transaction_type: 1,
 }
 user_not_found_transaction_request = {
     Literals.username: Literals.peter,
-    Literals.amount: 1.0,
+    Literals.amount: 1,
     Literals.transaction_type: 1,
 }
 invalid_transaction_request = {
     'invalid': Literals.peter,
-    Literals.amount: 1.0,
+    Literals.amount: 1,
     Literals.transaction_type: 1,
 }
 big_widthdraw_transaction_request = {
     Literals.username: Literals.george,
-    Literals.amount: 2.0,
+    Literals.amount: 2,
     Literals.transaction_type: 1,
 }
 day_before_now = datetime.now() - timedelta(days=1)

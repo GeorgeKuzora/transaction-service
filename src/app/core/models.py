@@ -24,7 +24,7 @@ class TransactionRequest(BaseModel):
     """Запрос создания транзакции."""
 
     username: str
-    amount: float
+    amount: int
     transaction_type: TransactionType
 
 
@@ -41,7 +41,7 @@ class Transaction(BaseModel):
     """
 
     username: str
-    amount: float
+    amount: int
     transaction_type: TransactionType
     timestamp: datetime
     transaction_id: int | None = None
@@ -79,7 +79,7 @@ class User(BaseModel):
 
     user_id: int | None = None
     username: str
-    balance: float
+    balance: int
     is_verified: bool
 
     def validate_transaction(
