@@ -72,7 +72,7 @@ class TransactionReport(BaseModel):
     username: str
     start_date: datetime
     end_date: datetime
-    transanctions: list[Transaction]
+    transactions: list[Transaction]
 
 
 class User(BaseModel):
@@ -83,7 +83,7 @@ class User(BaseModel):
     balance: Decimal | float
     is_verified: bool
 
-    def validate_transaciton(
+    def validate_transaction(
         self, transaction_request: TransactionRequest,
     ) -> None:
         """Валидирует транзакцию и баланс."""

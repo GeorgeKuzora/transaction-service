@@ -89,7 +89,7 @@ class InMemoryRepository:
             username=request.username,
             start_date=request.start_date,
             end_date=request.end_date,
-            transanctions=filtered_transactions,
+            transactions=filtered_transactions,
         )
 
         self.reports_count += 1

@@ -11,6 +11,7 @@ from app.core.models import (
     TransactionRequest,
     TransactionType,
 )
+from app.core.errors import ValidationError
 
 logger = logging.getLogger(__name__)
 
@@ -80,14 +81,14 @@ class Validator:
         :type start_date: datetime
         :param end_date: конечная дата периода
         :type end_date: datetime
-        :raises ValueError: если валидация не пройдена
+        :raises ValidationError: если валидация не пройдена
         """
         if start_date > end_date:
             logger.error(
                 f"{start_date} can't be greater than {end_date}",
             )
-            raise ValueError(
-                f"{start_date} can't be greater than {end_date}",
+            raise ValidationError(
+                detail=f"{start_date} can't be greater than {end_date}",
             )
 
 
@@ -148,7 +149,7 @@ class TransactionService:
             raise NotFoundError(
                 detail=f'Пользователь {transaction_request.username} не найден',
             )
-        user.validate_transaciton(transaction_request)
+        user.validate_transaction(transaction_request)
 
         transaction = Transaction(
             username=transaction_request.username,
