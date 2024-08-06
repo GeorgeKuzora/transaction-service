@@ -180,7 +180,7 @@ class TestCreateTransactionReport:
                 ),
                 empty_report_lenght,
                 id='invalid period',
-                marks=pytest.mark.xfail(raises=ValueError),
+                marks=pytest.mark.xfail(raises=ValidationError),
             ),
         ),
     )
@@ -195,7 +195,7 @@ class TestCreateTransactionReport:
             report_request,
         )
 
-        assert len(report.transanctions) == expected_tran_qnt
+        assert len(report.transactions) == expected_tran_qnt
         assert report.start_date == report_request.start_date
         assert report.end_date == report_request.end_date
         assert report.username == report_request.username

@@ -5,7 +5,7 @@ from app.service import app
 from app.core.transactions import TransactionService
 from app.external.in_memory_repository import InMemoryRepository
 from app.external.redis import TransactionReportCache
-from app.core.models import User
+from app.core.models import User, TransactionRequest
 
 
 @pytest.fixture(scope='session')
@@ -56,6 +56,30 @@ def service_with_user_fixture(service_with_cache: TransactionService):
         user = await service_with_cache.repository.create_user(user)
         return service_with_cache
     return _service_with_cache_fixture
+
+@pytest.fixture
+def service_with_transactions_fixture(
+    service_with_user_fixture,
+):
+    """
+    Возвращает функцию для создания сервиса.
+
+    Возвращаемая функция примает user,
+    создает запись о пользователе в базе данных
+
+    :param service_with_user_fixture: функция создания сервиса c пользователем
+    :type service_with_user_fixture: Callable
+    :return: функция создания сервиса
+    :rtype: callable
+    """
+    async def _service_with_transactions_fixture(  # noqa: WPS430, E501 need for service state parametrization
+        user: User, transactions: list[TransactionRequest],
+    ):
+        service: TransactionService = await service_with_user_fixture(user)
+        for transaction in transactions:
+            await service.create_transaction(transaction)
+        return service
+    return _service_with_transactions_fixture
 
 
 @pytest.fixture

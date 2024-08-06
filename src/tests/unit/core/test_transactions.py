@@ -118,7 +118,7 @@ class TestValidator:
                 datetime.now(),
                 datetime.now() - timedelta(days=1),
                 id='invalid time period end date less than start date',
-                marks=pytest.mark.xfail(raises=ValueError),
+                marks=pytest.mark.xfail(raises=ValidationError),
             ),
         ),
     )
@@ -236,7 +236,7 @@ async def test_create_transaction_not_found_error(
             datetime.now(),
             datetime.now() - timedelta(days=1),
             id='invalid period',
-            marks=pytest.mark.xfail(raises=ValueError),
+            marks=pytest.mark.xfail(raises=ValidationError),
         ),
         pytest.param(
             user_positive_balance,
@@ -276,7 +276,7 @@ async def test_create_transaction_report_without_cache(
         username=user.username,
         start_date=start_date,
         end_date=end_date,
-        transanctions=[expected_transaction],
+        transactions=[expected_transaction],
     )
 
     service.repository.create_transaction_report.return_value = expected_report
