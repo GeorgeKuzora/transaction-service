@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from decimal import Decimal
 
 import pytest
 
@@ -13,10 +12,10 @@ from app.core.models import (
 )
 
 user_positive_balance = User(
-    username='george', balance=Decimal(1), is_verified=False, user_id=1,
+    username='george', balance=1, is_verified=False, user_id=1,
 )
 user_zero_balance = User(
-    username='george', balance=Decimal(0), is_verified=False, user_id=1,
+    username='george', balance=0, is_verified=False, user_id=1,
 )
 
 
@@ -67,7 +66,7 @@ async def test_create_transaction(
     request = TransactionRequest(
         username=user.username,
         amount=amount,
-        transaciton_type=transaction_type,
+        transaction_type=transaction_type,
     )
     transaction = await service.create_transaction(request)
     assert len(service.repository.transactions) == 1
@@ -94,7 +93,7 @@ async def test_create_transaction_raises(
     request = TransactionRequest(
         username=user.username,
         amount=amount,
-        transaciton_type=transaction_type,
+        transaction_type=transaction_type,
     )
     with pytest.raises(NotFoundError):
         await service.create_transaction(request)
@@ -104,7 +103,7 @@ class TestCreateTransactionReport:
     """Тесты метода create_transaction_report."""
 
     username = 'george'
-    amount = Decimal(1)
+    amount = 1
     date = {'year': 2024, 'month': 1, 'day': 1}
     base_date = datetime(
         year=date['year'], month=date['month'], day=date['day'],
@@ -180,7 +179,7 @@ class TestCreateTransactionReport:
                 ),
                 empty_report_lenght,
                 id='invalid period',
-                marks=pytest.mark.xfail(raises=ValueError),
+                marks=pytest.mark.xfail(raises=ValidationError),
             ),
         ),
     )
@@ -195,7 +194,7 @@ class TestCreateTransactionReport:
             report_request,
         )
 
-        assert len(report.transanctions) == expected_tran_qnt
+        assert len(report.transactions) == expected_tran_qnt
         assert report.start_date == report_request.start_date
         assert report.end_date == report_request.end_date
         assert report.username == report_request.username

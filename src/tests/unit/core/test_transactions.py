@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from decimal import Decimal
 
 import pydantic
 import pytest
@@ -118,7 +117,7 @@ class TestValidator:
                 datetime.now(),
                 datetime.now() - timedelta(days=1),
                 id='invalid time period end date less than start date',
-                marks=pytest.mark.xfail(raises=ValueError),
+                marks=pytest.mark.xfail(raises=ValidationError),
             ),
         ),
     )
@@ -128,12 +127,12 @@ class TestValidator:
 
 
 user_positive_balance = User(
-    username='george', user_id=1, balance=Decimal(1), is_verified=False,
+    username='george', user_id=1, balance=1, is_verified=False,
 )
 user_zero_balance = User(
-    username='george', user_id=1, balance=Decimal(0), is_verified=False,
+    username='george', user_id=1, balance=0, is_verified=False,
 )
-amount = Decimal(1)
+amount = 1
 
 
 @pytest.mark.asyncio
@@ -179,7 +178,7 @@ async def test_create_transaction(user, amount, transaction_type, service):
     request = TransactionRequest(
         username=user.username,
         amount=amount,
-        transaciton_type=transaction_type,
+        transaction_type=transaction_type,
     )
     service.repository.get_user.return_value = user
     service.repository.create_transaction.return_value = expected_transaction
@@ -216,7 +215,7 @@ async def test_create_transaction_not_found_error(
     transaction_request = TransactionRequest(
         username=user.username,
         amount=amount,
-        transaciton_type=transaction_type,
+        transaction_type=transaction_type,
     )
     service.repository.get_user.return_value = user
     await service.create_transaction(transaction_request)
@@ -236,7 +235,7 @@ async def test_create_transaction_not_found_error(
             datetime.now(),
             datetime.now() - timedelta(days=1),
             id='invalid period',
-            marks=pytest.mark.xfail(raises=ValueError),
+            marks=pytest.mark.xfail(raises=ValidationError),
         ),
         pytest.param(
             user_positive_balance,
@@ -276,7 +275,7 @@ async def test_create_transaction_report_without_cache(
         username=user.username,
         start_date=start_date,
         end_date=end_date,
-        transanctions=[expected_transaction],
+        transactions=[expected_transaction],
     )
 
     service.repository.create_transaction_report.return_value = expected_report

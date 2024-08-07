@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime
-from decimal import Decimal
 from enum import Enum
 
 from pydantic import BaseModel
@@ -25,8 +24,8 @@ class TransactionRequest(BaseModel):
     """Запрос создания транзакции."""
 
     username: str
-    amount: Decimal
-    transaciton_type: TransactionType
+    amount: int
+    transaction_type: TransactionType
 
 
 class Transaction(BaseModel):
@@ -42,7 +41,7 @@ class Transaction(BaseModel):
     """
 
     username: str
-    amount: Decimal
+    amount: int
     transaction_type: TransactionType
     timestamp: datetime
     transaction_id: int | None = None
@@ -72,7 +71,7 @@ class TransactionReport(BaseModel):
     username: str
     start_date: datetime
     end_date: datetime
-    transanctions: list[Transaction]
+    transactions: list[Transaction]
 
 
 class User(BaseModel):
@@ -80,17 +79,17 @@ class User(BaseModel):
 
     user_id: int | None = None
     username: str
-    balance: Decimal
+    balance: int
     is_verified: bool
 
-    def validate_transaciton(
+    def validate_transaction(
         self, transaction_request: TransactionRequest,
     ) -> None:
         """Валидирует транзакцию и баланс."""
         valid = True
         invalid = False
         validation_result = invalid
-        if transaction_request.transaciton_type == TransactionType.deposit:
+        if transaction_request.transaction_type == TransactionType.deposit:
             validation_result = valid
         elif self.balance - transaction_request.amount >= 0:
             validation_result = valid
@@ -98,7 +97,7 @@ class User(BaseModel):
             validation_result = valid
         if not validation_result:
             logger.info(f'Баланс пользователя {transaction_request.username} не может быть отрицательным')  # noqa: E501
-            raise ValidationError(f'Баланс пользователя {transaction_request.username} не может быть отрицательным')  # noqa: E501
+            raise ValidationError(detail=f'Баланс пользователя {transaction_request.username} не может быть отрицательным')  # noqa: E501
 
     def process_transacton(self, transaction: Transaction):
         """Производит изменение баланса пользователя."""

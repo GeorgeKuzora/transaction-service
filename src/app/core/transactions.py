@@ -2,7 +2,7 @@ import asyncio
 import logging
 from datetime import datetime
 
-from app.core.errors import NotFoundError, RepositoryError
+from app.core.errors import NotFoundError, RepositoryError, ValidationError
 from app.core.interfaces import Cache, Repository
 from app.core.models import (
     Transaction,
@@ -80,14 +80,14 @@ class Validator:
         :type start_date: datetime
         :param end_date: конечная дата периода
         :type end_date: datetime
-        :raises ValueError: если валидация не пройдена
+        :raises ValidationError: если валидация не пройдена
         """
         if start_date > end_date:
             logger.error(
                 f"{start_date} can't be greater than {end_date}",
             )
-            raise ValueError(
-                f"{start_date} can't be greater than {end_date}",
+            raise ValidationError(
+                detail=f"{start_date} can't be greater than {end_date}",
             )
 
 
@@ -146,14 +146,14 @@ class TransactionService:
                 f'Пользователь {transaction_request.username} не найден',
             )
             raise NotFoundError(
-                f'Пользователь {transaction_request.username} не найден',
+                detail=f'Пользователь {transaction_request.username} не найден',
             )
-        user.validate_transaciton(transaction_request)
+        user.validate_transaction(transaction_request)
 
         transaction = Transaction(
             username=transaction_request.username,
             amount=transaction_request.amount,
-            transaction_type=transaction_request.transaciton_type,
+            transaction_type=transaction_request.transaction_type,
             timestamp=datetime.now(),
         )
 
@@ -211,7 +211,7 @@ class TransactionService:
         if report:
             return report
         logger.error('ошибка хранилища данных')
-        raise RepositoryError('ошибка хранилища данных')
+        raise RepositoryError(detail='ошибка хранилища данных')
 
     async def _create_transaction_report_without_cache(
         self, request: TransactionReportRequest,
