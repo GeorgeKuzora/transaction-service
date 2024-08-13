@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS users (
     username VARCHAR (200) unique not null,
     hashed_password VARCHAR (1000) not null,
     balance BIGINT default 0,
-    is_verified BOOL default false
+    is_verified BOOLEAN default false
 );
 
 CREATE TABLE IF NOT EXISTS transactions (
