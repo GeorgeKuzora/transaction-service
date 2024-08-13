@@ -1,0 +1,31 @@
+Table users {
+  id bigserial [primary key]
+  username varchar[200] [unique]
+  hashed_password varchar[1000] [not null]
+  balance bigint [not null]
+  is_verified boolean [not null]
+  is_deleted boolean [not null]
+}
+
+Table transactions {
+  id bigserial [primary key]
+  transaction_type boolean [not null]
+  amount bigint [not null]
+  created_at timestamp [not null]
+  id_user bigint [ref: > users.id]
+  is_deleted boolean [not null]
+}
+
+Table reports {
+  id bigserial [primary key]
+  start_date timestamp [not null]
+  end_date timestamp [not null]
+  id_user bigint [ref: > users.id]
+  is_deleted boolean [not null]
+}
+
+Table report_transactions {
+  id bigserial [primary key]
+  id_report bigint [ref: > reports.id]
+  id_transaction bigint [ref: > transactions.id]
+}
