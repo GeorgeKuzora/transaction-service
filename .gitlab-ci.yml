@@ -8,6 +8,7 @@ variables:
   SOURCE_CODE_DIR: 'src'
   APP_CODE_DIR: 'src/app'
   TEST_CODE_DIR: 'src/tests'
+  CONFIG_PATH: 'src/config/config-local.yml'
 
 default:
   image: python:3.12.4-slim-bookworm
@@ -22,6 +23,7 @@ default:
     - export APP_CODE_DIR=$APP_CODE_DIR
     - export TEST_CODE_DIR=$TEST_CODE_DIR
     - export PYTHONPATH=$SOURCE_CODE_DIR
+    - export CONFIG_PATH=$CONFIG_PATH
     - export POETRY_VIRTUALENVS_IN_PROJECT=false
     - export POETRY_NO_INTERACTION=1
     - export POETRY_VERSION=$POETRY_VERSION
