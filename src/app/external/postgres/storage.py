@@ -115,7 +115,7 @@ class DBUserStorage:
                 return self._get_srv_user(db_user)
             return None
 
-    async def update_user(
+    async def update_user(  # type: ignore  # deprecated
         self, user: srv.User,
     ) -> srv.User | None:
         """
@@ -186,7 +186,7 @@ class DBReportStorage:
 
     def _get_transactions(
         self, request: srv.TransactionReportRequest, session: Session,
-    ) -> Sequence[db.Transaction]:
+    ) -> Sequence:
         stmt = select(db.Transaction).where(
             db.Transaction.user.username == request.username and
             request.start_date.date() <= db.Transaction.created_at.date() <= request.end_date.date(),  # noqa: E501
