@@ -4,7 +4,6 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Self
 
-import dotenv
 import yaml
 from pydantic import Field, PostgresDsn
 from pydantic_settings import BaseSettings
