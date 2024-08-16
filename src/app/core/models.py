@@ -16,8 +16,8 @@ class TransactionType(Enum):
     Может быть либо Продажа, либо Покупка.
     """
 
-    deposit = 0
-    withdraw = 1
+    deposit = False
+    withdraw = True
 
 
 class TransactionRequest(BaseModel):
