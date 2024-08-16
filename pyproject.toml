@@ -20,6 +20,9 @@ coverage-conditional-plugin = "*"
 pytest-cov = "*"
 anyio = { version = "^4.4.0", extras = ["trio"] }
 pytest-asyncio = "*"
+SQLAlchemy = "2.0.32"
+psycopg2-binary = "2.9.9"
+alembic = "1.13.2"
 
 [build-system]
 requires = ["poetry-core"]
