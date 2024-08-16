@@ -4,11 +4,7 @@ from enum import StrEnum
 import pytest
 from pydantic import ValidationError
 
-from app.core.config import (
-    PostgresSettings,
-    Settings,
-    get_settings,
-)
+from app.core.config import PostgresSettings, Settings, get_settings
 from app.core.errors import ConfigError
 
 
