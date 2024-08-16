@@ -89,8 +89,6 @@ class TestSettings:
         """Тестирует инициализацию класса."""
         settings = Settings(**input_values)
 
-        assert settings.kafka.host == input_values[Key.kafka][Key.host]  # type: ignore  # noqa: E501
-        assert settings.kafka.port == input_values[Key.kafka][Key.port]  # type: ignore  # noqa: E501
         assert (
             str(settings.postgres.pg_dns) ==
             str(input_values[Key.postgres][Key.pg_dns])  # type: ignore
@@ -113,8 +111,10 @@ class TestSettings:
         """Тестирует метод from_yaml."""
         settings = Settings.from_yaml(config_path)
 
-        assert settings.kafka.host == valid_input[Key.kafka][Key.host]  # type: ignore  # noqa: E501
-        assert settings.kafka.port == valid_input[Key.kafka][Key.port]  # type: ignore  # noqa: E501
+        assert (
+            str(settings.postgres.pg_dns) ==
+            str(valid_input[Key.postgres][Key.pg_dns])  # type: ignore
+        )
 
 
 @pytest.fixture
@@ -138,5 +138,7 @@ def test_get_settings(config_file_path, request):
 
     settings = get_settings()
 
-    assert settings.kafka.host == valid_input[Key.kafka][Key.host]  # type: ignore  # noqa: E501
-    assert settings.kafka.port == valid_input[Key.kafka][Key.port]  # type: ignore  # noqa: E501
+    assert (
+        str(settings.postgres.pg_dns) ==
+        str(valid_input[Key.postgres][Key.pg_dns])  # type: ignore
+    )
