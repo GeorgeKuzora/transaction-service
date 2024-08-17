@@ -17,7 +17,7 @@ services:
       - seccomp:unconfined
     environment:
       - PYTHONPATH=/workspace/src
-      - CONFIG_PATH="/workspace/src/config/config-local.yml"
+      - CONFIG_PATH=/workspace/src/config/config-local.yml
   db:
     image: postgres:16.3
     restart: unless-stopped
