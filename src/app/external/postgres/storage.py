@@ -53,6 +53,7 @@ class DBTransactionStorage():
                 user=user,
             )
             session.add(db_transaction)
+            transaction = self._get_srv_transaction(db_transaction)
             try:
                 session.commit()
             except Exception as err:
@@ -62,7 +63,7 @@ class DBTransactionStorage():
                 raise RepositoryError(
                     detail=f"can't create transaction for {transaction.username}",  # noqa: E501
                 ) from err
-        return self._get_srv_transaction(db_transaction)
+        return transaction
 
     def _get_db_user(self, username: str, session: Session) -> db.User | None:
         try:
@@ -165,6 +166,11 @@ class DBReportStorage:
         """Метод создания отчета."""
         with Session(self.pool) as session:
             user = self._get_db_user(request.username, session)
+            if user is None:
+                logger.error(f'{request.username} not found in db')
+                raise NotFoundError(
+                    detail=f'{request.username} not found',
+                )
             transactions = self._get_transactions(request, session)
             report = db.Report(
                 start_date=request.start_date,
@@ -173,6 +179,7 @@ class DBReportStorage:
                 transactions=transactions,
             )
             session.add(report)
+            srv_report = self._get_srv_report(report)
             try:
                 session.commit()
             except Exception as err:
@@ -182,15 +189,16 @@ class DBReportStorage:
                 raise RepositoryError(
                     detail=f"can't create report for {request.username}",
                 ) from err
-            return self._get_srv_report(report)
+            return srv_report
 
     def _get_transactions(
         self, request: srv.TransactionReportRequest, session: Session,
     ) -> Sequence:
-        stmt = select(db.Transaction).where(
-            db.Transaction.user.username == request.username and
-            request.start_date.date() <= db.Transaction.created_at.date() <= request.end_date.date(),  # noqa: E501
-        )
+        stmt = select(db.Transaction).join(db.Transaction.user).where(  # noqa: WPS221, E501 working with database
+            db.User.username == request.username,
+        ).where(
+            db.Transaction.created_at >= request.start_date,
+        ).where(db.Transaction.created_at <= request.end_date)
         try:
             return session.scalars(stmt).all()  # type: ignore
         except Exception as err:
