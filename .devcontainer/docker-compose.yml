@@ -17,4 +17,18 @@ services:
       - seccomp:unconfined
     environment:
       - PYTHONPATH=/workspace/src
-      - CONFIG_PATH="/workspace/src/config/config-local.yml"
+      - CONFIG_PATH=/workspace/src/config/config-local.yml
+  db:
+    image: postgres:16.3
+    restart: unless-stopped
+    environment:
+      - POSTGRES_PASSWORD=mysecretpassword
+      - POSTGRES_USER=myuser
+      - POSTGRES_DB=mydatabase
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    ports:
+      - '5432:5432'
+    volumes:
+      - dev-db-storage:/var/lib/postgresql/data
+volumes:
+  dev-db-storage:

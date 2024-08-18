@@ -16,8 +16,8 @@ class TransactionType(Enum):
     Может быть либо Продажа, либо Покупка.
     """
 
-    deposit = 0
-    withdraw = 1
+    deposit = False
+    withdraw = True
 
 
 class TransactionRequest(BaseModel):
@@ -67,7 +67,7 @@ class TransactionReport(BaseModel):
         transactions: list[Transaction] - список транзакций за период.
     """
 
-    report_id: int
+    report_id: int | None
     username: str
     start_date: datetime
     end_date: datetime

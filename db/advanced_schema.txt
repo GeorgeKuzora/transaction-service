@@ -1,0 +1,57 @@
+Table users {
+  id bigsetial [primary key]
+  username varchar[200] [unique, not null]
+  hashed_password varchar[1000] [not null]
+  balance bigint [not null]
+  is_verified boolean [not null]
+  is_deleted boolean [not null]
+}
+
+Table transactions {
+  id bigsetial [primary key]
+  transaction_type boolean [not null]
+  amount bigint [not null]
+  created_at timestamp [not null]
+  id_account bigint [ref: > accounts.id]
+  is_deleted boolean [not null]
+}
+
+Table reports {
+  id bigsetial [primary key]
+  start_date timestamp [not null]
+  end_date timestamp [not null]
+  id_account bigint [ref: > accounts.id]
+  is_deleted boolean [not null]
+}
+
+Table report_transaction {
+  id bigsetial [primary key]
+  id_report bigint [ref: > reports.id]
+  id_transaction bigint [ref: > transactions.id]
+}
+
+Table accounts {
+  id bigsetial [primary key]
+  title varchar[1000] [not null]
+  id_user bigint [ref: > users.id]
+  is_deleted boolean [not null]
+}
+
+Table labels {
+  id bigsetial [primary key]
+  title varchar[1000] [not null]
+  description varchar[2000]
+  color varchar[100] [not null]
+}
+
+Table report_lable {
+  id bigsetial [primary key]
+  id_report bigint [ref: > reports.id]
+  id_label bigint [ref: > labels.id]
+}
+
+Table transaction_lable {
+  id bigsetial [primary key]
+  id_label bigint [ref: > labels.id]
+  id_transaction bigint [ref: > transactions.id]
+}
