@@ -21,6 +21,21 @@ spec:
               cpu: "100m"
           ports:
             - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: healthz/ready
+              port: 8080
+            failureThreshold: 5
+            initialDelaySeconds: 30
+            periodSeconds: 2
+            successThreshold: 2
+          livenessProbe:
+            httpGet:
+              path: healthz/up
+              port: 8080
+            failureThreshold: 10
+            initialDelaySeconds: 3
+            periodSeconds: 2
           env:
             - name: CONFIG_PATH
               valueFrom:
