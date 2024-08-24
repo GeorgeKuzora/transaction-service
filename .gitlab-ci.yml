@@ -64,6 +64,8 @@ docker-build-job:
     - docker build -t ${BUILD_IMAGE} .
     - docker tag ${BUILD_IMAGE} ${BUILD_IMAGE}
     - docker push ${BUILD_IMAGE}
+  after_script:
+    - docker logout
 
 flake8-lint-job:
   interruptible: true
