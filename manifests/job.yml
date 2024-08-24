@@ -20,11 +20,11 @@ spec:
               configMapKeyRef:
                 name: kuzora-transaction-configmap
                 key: pythonpath
-          - name: PG_DNS
+          - name: ALEMBIC_CONFIG
             valueFrom:
               configMapKeyRef:
                 name: kuzora-transaction-configmap
-                key: pg_dns
+                key: alembic_config
       restartPolicy: Never
   backoffLimit: 4
   activeDeadlineSeconds: 120

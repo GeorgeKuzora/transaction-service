@@ -5,4 +5,4 @@ metadata:
 data:
   config_path: /app/config/config-kube.yml
   pythonpath: /app/src
-  pg_dns: "postgresql+psycopg2://username:password@postgres-service:5432/gkuzora"
+  alembic_config: /app/alembic_kube.ini
