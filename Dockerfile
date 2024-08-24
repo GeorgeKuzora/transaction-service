@@ -32,7 +32,7 @@ RUN poetry install --only main --all-extras --compile --no-root
 ENV PYTHONPATH=$SOURCE_PATH \
     CONFIG_PATH=$CONFIG_DIR_PATH/config-local.yml
 
-COPY src ./src
+COPY . .
 
 EXPOSE 8080
 
