@@ -1,0 +1,30 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: kuzora-database-migrate-job
+spec:
+  template:
+    spec:
+      containers:
+      - name: kuzora-database-migrate
+        image: gkuzora/transaction-service:latest
+        command: ["poetry", "run", "alembic", "upgrade", "head"]
+        env:
+          - name: CONFIG_PATH
+            valueFrom:
+              configMapKeyRef:
+                name: kuzora-transaction-configmap
+                key: config_path
+          - name: PYTHONPATH
+            valueFrom:
+              configMapKeyRef:
+                name: kuzora-transaction-configmap
+                key: pythonpath
+          - name: ALEMBIC_CONFIG
+            valueFrom:
+              configMapKeyRef:
+                name: kuzora-transaction-configmap
+                key: alembic_config
+      restartPolicy: Never
+  backoffLimit: 4
+  activeDeadlineSeconds: 120

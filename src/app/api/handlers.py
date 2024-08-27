@@ -11,7 +11,7 @@ from app.core.models import (
     TransactionRequest,
 )
 from app.core.transactions import TransactionService
-from app.external.in_memory_repository import InMemoryRepository
+from app.external.postgres.storage import DBStorage
 from app.external.redis import TransactionReportCache
 
 logger = logging.getLogger(__name__)
@@ -21,7 +21,7 @@ router = APIRouter()
 
 def get_service() -> TransactionService:
     """Инициализирует сервис."""
-    storage = InMemoryRepository()
+    storage = DBStorage()
     cache = TransactionReportCache()
     return TransactionService(repository=storage, cache=cache)
 

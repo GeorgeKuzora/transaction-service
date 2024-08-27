@@ -38,18 +38,6 @@ class Repository(Protocol):
         """
         ...  # noqa: WPS428 valid protocol syntax
 
-    async def create_user(self, user: User) -> User:
-        """
-        Создает пользователя в базе данных.
-
-        Создает, сохраняет в базе данных
-        и возвращает индексированную запись о пользователе.
-
-        :param user: неидексированная запись о пользователе.
-        :type user: User
-        """
-        ...  # noqa: WPS428 valid protocol syntax
-
     async def update_user(
         self, user: User,
     ) -> User | None:

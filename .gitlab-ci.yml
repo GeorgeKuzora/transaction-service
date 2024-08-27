@@ -1,4 +1,5 @@
 stages:
+  - build
   - lint
   - test
 
@@ -33,6 +34,38 @@ default:
     - apt-get install --no-install-recommends -y pipx
     - pipx install poetry==$POETRY_VERSION
     - poetry install --all-extras --compile --no-root
+
+docker-build-job:
+  interruptible: true
+  stage: build
+  image:
+    docker:27.1.2-cli
+  services:
+    - name: docker:27.1.2-dind
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes:
+        - "**/*"
+    - if: $CI_PIPELINE_SOURCE == "push"
+      changes:
+        - $SOURCE_CODE_DIR/**/*
+    - if: $CI_PIPELINE_SOURCE == "push"
+      changes:
+        - "**/*"
+      when: manual
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+    IMAGE_NAME: "transaction-service:latest"
+    BUILD_IMAGE: "${DOCKER_REG}/${IMAGE_NAME}"
+  before_script:
+    - docker info
+    - docker login -u ${DOCKER_REG} -p ${DOCKER_PASSWORD}
+  script:
+    - docker build -t ${BUILD_IMAGE} .
+    - docker tag ${BUILD_IMAGE} ${BUILD_IMAGE}
+    - docker push ${BUILD_IMAGE}
+  after_script:
+    - docker logout
 
 flake8-lint-job:
   interruptible: true

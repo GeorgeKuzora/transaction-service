@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kuzora-transaction-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kuzora-transaction
+  template:
+    metadata:
+      labels:
+        app: kuzora-transaction
+    spec:
+      containers:
+        - name: kuzora-transaction
+          image: gkuzora/transaction-service:latest
+          resources:
+            limits:
+              memory: "200Mi"
+              cpu: "100m"
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /healthz/ready
+              port: 8080
+            failureThreshold: 5
+            initialDelaySeconds: 120
+            periodSeconds: 2
+            successThreshold: 2
+          livenessProbe:
+            httpGet:
+              path: /healthz/up
+              port: 8080
+            failureThreshold: 10
+            initialDelaySeconds: 3
+            periodSeconds: 2
+          env:
+            - name: CONFIG_PATH
+              valueFrom:
+                configMapKeyRef:
+                  name: kuzora-transaction-configmap
+                  key: config_path
+            - name: PYTHONPATH
+              valueFrom:
+                configMapKeyRef:
+                  name: kuzora-transaction-configmap
+                  key: pythonpath
+            - name: ALEMBIC_CONFIG
+              valueFrom:
+                configMapKeyRef:
+                  name: kuzora-transaction-configmap
+                  key: alembic_config
