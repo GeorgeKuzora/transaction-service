@@ -22,6 +22,7 @@ class Key(StrEnum):
     pg_dns = 'pg_dns'
     pool_size = 'pool_size'
     max_overflow = 'max_overflow'
+    tracing = 'tracing'
 
 
 postgres_valid_input = {
@@ -34,12 +35,24 @@ postgres_invalid_input = {
     Key.pool_size: 10,
     Key.max_overflow: 20,
 }
+tracing_input = {
+    'enabled': True,
+    'sampler_type': 'const',
+    'sampler_param': 1,
+    'agent_host': 'jaeger',
+    'agent_port': 6831,
+    'service_name': 'auth-service',
+    'logging': True,
+    'validation': True,
+}
 
 valid_input = {
     Key.postgres: postgres_valid_input,
+    Key.tracing: tracing_input,
 }
 invalid_input_postgres = {
     Key.postgres: postgres_invalid_input,
+    Key.tracing: tracing_input,
 }
 valid_config_path = 'src/config/config-local.yml'
 invalid_config_path = 'src/config/invalid_path.yml'

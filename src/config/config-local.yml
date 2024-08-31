@@ -2,3 +2,12 @@ postgres:
   pg_dns: "postgresql+psycopg2://myuser:mysecretpassword@db:5432/mydatabase"
   pool_size: 10
   max_overflow: 20
+tracing:
+  enabled: True
+  sampler_type: "const"
+  sampler_param: 1
+  agent_host: "jaeger"
+  agent_port: 6831
+  service_name: "transacton-service"
+  logging: true
+  validation: true
