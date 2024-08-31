@@ -70,18 +70,24 @@ async def create_report(
     report_request: TransactionReportRequest,
 ) -> TransactionReport:
     """Создает отчет."""
-    task = asyncio.create_task(
-        service.create_transaction_report(report_request),
-    )
-    try:
-        return await task
-    except ServerError as r_err:
-        logger.error('Ошибка сервера')
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-        ) from r_err
-    except ValueError as r_err:
-        logger.error(f'Переданное значение неверно {report_request}')
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        ) from r_err
+    with global_tracer().start_active_span('create_report') as scope:
+        scope.span.set_tag(Tag.username, report_request.username)
+        task = asyncio.create_task(
+            service.create_transaction_report(report_request),
+        )
+        try:
+            return await task
+        except ServerError as r_err:
+            logger.error('Ошибка сервера')
+            scope.span.set_tag(
+                Tag.error, 'unexpected server error on create_report',
+            )
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            ) from r_err
+        except ValueError as r_err:
+            logger.error(f'Переданное значение неверно {report_request}')
+            scope.span.set_tag(Tag.warning, 'report request has invalid format')
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            ) from r_err
