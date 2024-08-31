@@ -41,7 +41,7 @@ tracing_input = {
     'sampler_param': 1,
     'agent_host': 'jaeger',
     'agent_port': 6831,
-    'service_name': 'auth-service',
+    'service_name': 'transaction-service',
     'logging': True,
     'validation': True,
 }
