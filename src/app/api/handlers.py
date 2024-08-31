@@ -1,9 +1,8 @@
 import asyncio
 import logging
-from app.metrics.tracing import Tag
-from opentracing import global_tracer
 
 from fastapi import APIRouter, HTTPException, status
+from opentracing import global_tracer
 
 from app.core.errors import ServerError, ValidationError
 from app.core.models import (
@@ -15,6 +14,7 @@ from app.core.models import (
 from app.core.transactions import TransactionService
 from app.external.postgres.storage import DBStorage
 from app.external.redis import TransactionReportCache
+from app.metrics.tracing import Tag
 
 logger = logging.getLogger(__name__)
 
