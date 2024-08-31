@@ -32,7 +32,7 @@ class TracingSettings(BaseSettings):
     sampler_param: int = 1
     agent_host: str = 'jaeger'
     agent_port: int = 6831
-    service_name: str = 'auth-service'
+    service_name: str = 'transaction-service'
     logging: bool = True
     validation: bool = True
 
