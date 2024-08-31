@@ -1,5 +1,7 @@
 import asyncio
 import logging
+from app.metrics.tracing import Tag
+from opentracing import global_tracer
 
 from fastapi import APIRouter, HTTPException, status
 
@@ -34,24 +36,33 @@ async def create_transaction(
     transaction_request: TransactionRequest,
 ) -> Transaction:
     """Созадет транзакцию."""
-    task = asyncio.create_task(service.create_transaction(transaction_request))
-    try:
-        return await task
-    except ValidationError as v_err:
-        logger.info(f'транзакция {transaction_request} запрещена')
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-        ) from v_err
-    except ValueError as v_err:
-        logger.info(f'транзакция {transaction_request} неверный формат')
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-        ) from v_err
-    except ServerError as err:
-        logger.error('Неизвестная ошибка сервера')
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-        ) from err
+    with global_tracer().start_active_span('create_transaction') as scope:
+        scope.span.set_tag(Tag.username, transaction_request.username)
+        task = asyncio.create_task(
+            service.create_transaction(transaction_request),
+        )
+        try:
+            return await task
+        except ValidationError as v_err:
+            logger.info(f'транзакция {transaction_request} запрещена')
+            scope.span.set_tag(Tag.warning, 'transaction validation failed')
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+            ) from v_err
+        except ValueError as v_err:
+            logger.info(f'транзакция {transaction_request} неверный формат')
+            scope.span.set_tag(Tag.warning, 'transaction invalid format')
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+            ) from v_err
+        except ServerError as err:
+            logger.error('Неизвестная ошибка сервера')
+            scope.span.set_tag(
+                Tag.error, 'unexpected server error on create_transaction',
+            )
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            ) from err
 
 
 @router.post('/create_report', status_code=status.HTTP_200_OK)
