@@ -26,7 +26,7 @@ spec:
               path: /healthz/ready
               port: 8080
             failureThreshold: 5
-            initialDelaySeconds: 120
+            initialDelaySeconds: 30
             periodSeconds: 2
             successThreshold: 2
           livenessProbe:
@@ -34,7 +34,7 @@ spec:
               path: /healthz/up
               port: 8080
             failureThreshold: 10
-            initialDelaySeconds: 3
+            initialDelaySeconds: 300
             periodSeconds: 2
           env:
             - name: CONFIG_PATH

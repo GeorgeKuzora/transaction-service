@@ -24,10 +24,24 @@ class PostgresSettings(BaseSettings):
     max_overflow: int = 20
 
 
+class TracingSettings(BaseSettings):
+    """Конфигурация трейсинга."""
+
+    enabled: bool = False
+    sampler_type: str = 'const'
+    sampler_param: int = 1
+    agent_host: str = 'jaeger'
+    agent_port: int = 6831
+    service_name: str = 'transaction-service'
+    logging: bool = True
+    validation: bool = True
+
+
 class Settings(BaseSettings):
     """Конфигурация приложения."""
 
     postgres: PostgresSettings
+    tracing: TracingSettings
 
     @classmethod
     def from_yaml(cls, config_path) -> Self:
