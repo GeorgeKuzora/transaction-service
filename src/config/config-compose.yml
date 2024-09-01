@@ -11,3 +11,7 @@ tracing:
   service_name: "transacton-service"
   logging: true
   validation: true
+redis:
+  host: "cache"
+  port: 6379
+  decode_responses: True

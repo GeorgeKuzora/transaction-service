@@ -23,6 +23,7 @@ class Key(StrEnum):
     pool_size = 'pool_size'
     max_overflow = 'max_overflow'
     tracing = 'tracing'
+    redis = 'redis'
 
 
 postgres_valid_input = {
@@ -45,14 +46,21 @@ tracing_input = {
     'logging': True,
     'validation': True,
 }
+redis_input = {
+    'host': 'redis',
+    'port': 6379,
+    'decode_responses': True,
+}
 
 valid_input = {
     Key.postgres: postgres_valid_input,
     Key.tracing: tracing_input,
+    Key.redis: redis_input,
 }
 invalid_input_postgres = {
     Key.postgres: postgres_invalid_input,
     Key.tracing: tracing_input,
+    Key.redis: redis_input,
 }
 valid_config_path = 'src/config/config-local.yml'
 invalid_config_path = 'src/config/invalid_path.yml'
