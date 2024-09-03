@@ -30,8 +30,9 @@ class TransactionType(Enum):
                 return 1
 
     @classmethod
-    def from_int(cls, t_type: int) -> Self:
+    def from_int(cls, t_type: int | str) -> Self:
         """Преобразует int в TransactionType."""
+        t_type = int(t_type)
         match t_type:
             case 0:
                 return cls.deposit  # type:ignore
