@@ -74,3 +74,7 @@ class Cache(Protocol):
         :type cache_value: TransactionReport
         """
         ...  # noqa: WPS428 valid protocol syntax
+
+    async def flush_cache(self) -> None:
+        """Удаляет все ключи."""
+        ...  # noqa: WPS428 valid protocol syntax

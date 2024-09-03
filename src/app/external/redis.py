@@ -1,12 +1,222 @@
-from app.core.models import TransactionReport, TransactionReportRequest
+import logging
+from datetime import datetime
+from enum import StrEnum
+from typing import Any
+
+import redis
+
+from app.core.config import get_settings
+from app.core.errors import ServerError
+from app.core.models import (
+    Transaction,
+    TransactionReport,
+    TransactionReportRequest,
+    TransactionType,
+)
+
+logger = logging.getLogger(__name__)
 
 
-class TransactionReportCache:
+class Key(StrEnum):
+    """Часто используемые ключи словарей."""
+
+    username = 'username'
+
+
+class ReporCacheMixin:
+    """Миксин для кэширования отчетов."""
+
+    def __init__(self) -> None:
+        """Метод инициализации класса ReporCacheMixin."""
+        settings = get_settings()
+        self.storage = redis.Redis(
+            host=settings.redis.host,
+            port=settings.redis.port,
+            decode_responses=settings.redis.decode_responses,
+        )
+
+    def create_report_cache(
+        self,
+        report_request: TransactionReportRequest | TransactionReport,
+        transactions_key: str,
+    ) -> None:
+        """Создает кэш отчета."""
+        key = self._get_key(report_request)
+        mapping = self._get_mapping(report_request, transactions_key)
+        try:
+            self.storage.hset(key, mapping=mapping)
+        except Exception as exc:
+            logger.error(
+                'unexpected cache error on create report cache', exc_info=exc,
+            )
+            raise ServerError() from exc
+
+    def get_report_cache(
+        self, report_request: TransactionReportRequest,
+    ) -> dict[str, Any]:
+        """Получает кэш отчета."""
+        key = self._get_key(report_request)
+        try:
+            value_from_cache: dict[str, Any] = self.storage.hgetall(key)  # type:ignore # noqa: E501
+        except Exception as exc:
+            logger.error('error during cache access', exc_info=exc)
+            raise ServerError() from exc
+        if value_from_cache:
+            logger.debug(f'got value from cache {value_from_cache}')
+            return value_from_cache
+        logger.debug(f'report not found: {report_request}')
+        raise KeyError(f'{report_request} not found')
+
+    def _get_key(
+        self, cache_value: TransactionReport | TransactionReportRequest,
+    ) -> str:
+        date_format = '%d-%m-%Y'  # noqa: WPS323 date format
+        return f'report:{cache_value.username}{cache_value.start_date.strftime(date_format)}{cache_value.end_date.strftime(date_format)}'  # noqa: E501, WPS237, WPS221 cant help
+
+    def _get_mapping(
+        self,
+        report_request: TransactionReportRequest | TransactionReport,
+        transactions_key: str,
+    ) -> dict[str, Any]:
+        return {
+            Key.username: report_request.username,
+            'start_date': report_request.start_date.isoformat(),
+            'end_date': report_request.end_date.isoformat(),
+            'transactions': transactions_key,
+        }
+
+
+class TransactionCacheMixin:
+    """Миксин для кэширования транзакций."""
+
+    def __init__(self) -> None:
+        """Метод инициализации класса TransactionCacheMixin."""
+        settings = get_settings()
+        self.storage = redis.Redis(
+            host=settings.redis.host,
+            port=settings.redis.port,
+            decode_responses=settings.redis.decode_responses,
+        )
+
+    def create_transactions_cache(
+        self, transactions: list[Transaction],
+    ) -> list[str]:
+        """Создает кэш транзакций."""
+        transactions_keys = []
+        for transaction in transactions:
+            key = self._get_transaction_key(transaction)
+            try:
+                self.storage.hset(
+                    key, mapping=self._get_transaction_mapping(transaction),
+                )
+            except Exception as exc:
+                logger.error(
+                    'cache error during create transaction', exc_info=exc,
+                )
+                raise ServerError() from exc
+            transactions_keys.append(key)
+        return transactions_keys
+
+    def get_transactions_from_cache(
+        self, keys: list[str],
+    ) -> list[Transaction]:
+        """Получает транзакции из кэша."""
+        transactions = []
+        for key in keys:
+            try:
+                transaction = self.storage.hgetall(key)
+            except Exception as exc:
+                logger.error(
+                    'cache error during get transaction', exc_info=exc,
+                )
+                raise ServerError() from exc
+            if transaction:
+                transactions.append(self._get_transaction(transaction))  # type:ignore # noqa:E501
+        return transactions
+
+    def _get_transaction(self, mapping: dict[str, Any]) -> Transaction:
+        transaction_type = mapping.get(
+            'transaction_type', TransactionType.deposit,
+        )
+        if map_timestamp := mapping.get('timestamp', ''):  # noqa:WPS332 valid
+            timestamp = datetime.fromisoformat(map_timestamp)
+        else:
+            timestamp = datetime.now()
+        return Transaction(
+            username=mapping.get(Key.username, ''),
+            amount=mapping.get('amount', 0),
+            transaction_type=transaction_type,
+            timestamp=timestamp,
+        )
+
+    def _get_transaction_key(self, cache_value: Transaction) -> str:
+        date_format = '%d-%m-%Y-%H-%M-%S'  # noqa: WPS323 date format
+        return f'transaction:{cache_value.username}{cache_value.timestamp.strftime(date_format)}'  # noqa: E501, WPS237, WPS221 cant help
+
+    def _get_transaction_mapping(
+        self,
+        transaction: Transaction,
+    ) -> dict[str, Any]:
+        return {
+            Key.username: transaction.username,
+            'amount': transaction.amount,
+            'transaction_type': transaction.transaction_type.value,
+            'timestamp': transaction.timestamp.isoformat(),
+        }
+
+
+class TransactionsListCacheMixin:
+    """Миксин для кэширования транзакций."""
+
+    def __init__(self) -> None:
+        """Метод инициализации класса TransactionsListCacheMixin."""
+        settings = get_settings()
+        self.storage = redis.Redis(
+            host=settings.redis.host,
+            port=settings.redis.port,
+            decode_responses=settings.redis.decode_responses,
+        )
+
+    def _get_transactions_key(
+        self, cache_value: TransactionReport | TransactionReportRequest,
+    ) -> str:
+        date_format = '%d-%m-%Y'  # noqa: WPS323 date format
+        return f'transactions:{cache_value.username}{cache_value.start_date.strftime(date_format)}{cache_value.end_date.strftime(date_format)}'  # noqa: E501, WPS237, WPS221 cant help
+
+    def _create_transacitons_list_cache(
+        self, key: str, transactions_list: list[str],
+    ) -> None:
+        try:
+            self.storage.rpush(key, *transactions_list)
+        except Exception as exc:
+            logger.error(
+                'cache error during create transactions list', exc_info=exc,
+            )
+            raise ServerError() from exc
+
+    def _get_transactions_list_cache(self, key: str) -> list[str]:
+        try:
+            return self.storage.lrange(key, 0, -1)  # type:ignore # noqa:E501
+        except Exception as exc:
+            logger.error(
+                'cache error during get transactions list', exc_info=exc,
+            )
+            raise ServerError() from exc
+
+
+class TransactionReportCache(
+    ReporCacheMixin, TransactionCacheMixin, TransactionsListCacheMixin,
+):
     """Имплементация кэша для хранения отчетов."""
 
     def __init__(self) -> None:
-        """Метод инициализации."""
-        self.storage: dict[str, TransactionReport] = {}
+        """Метод инициализации класса TransactionReportCache."""
+        settings = get_settings()
+        self.storage = redis.Redis(
+            host=settings.redis.host,
+            port=settings.redis.port,
+            decode_responses=settings.redis.decode_responses,
+        )
 
     async def get_cache(
         self, cache_value: TransactionReportRequest,
@@ -20,11 +230,13 @@ class TransactionReportCache:
         :rtype: Token
         :raises KeyError: Значение не найдено в кэше
         """
-        key = self._create_key(cache_value)
-        token_value = self.storage.get(key)
-        if token_value:
-            return token_value
-        raise KeyError(f'{cache_value} not found')
+        report = self.get_report_cache(cache_value)
+        key = report.get('transactions', '')
+        if not key:
+            raise KeyError(f'report{cache_value} not found')
+        transaction_keys = self._get_transactions_list_cache(key)
+        transactions = self.get_transactions_from_cache(transaction_keys)
+        return self._get_report(report, transactions)
 
     async def create_cache(self, cache_value: TransactionReport) -> None:
         """
@@ -33,11 +245,22 @@ class TransactionReportCache:
         :param cache_value: Кэшируемое значение
         :type cache_value: Token
         """
-        key = self._create_key(cache_value)
-        self.storage[key] = cache_value
+        transactions_key = self._get_transactions_key(cache_value)
+        transactions = self.create_transactions_cache(cache_value.transactions)
+        self._create_transacitons_list_cache(transactions_key, transactions)
+        self.create_report_cache(cache_value, transactions_key)
 
-    def _create_key(
-        self, cache_value: TransactionReport | TransactionReportRequest,
-    ) -> str:
-        date_format = '%d-%m-%Y'  # noqa: WPS323 date format
-        return f'{cache_value.username}{cache_value.start_date.strftime(date_format)}{cache_value.end_date.strftime(date_format)}'  # noqa: E501, WPS237, WPS221 cant help
+    async def flush_cache(self) -> None:
+        """Удаляет все ключи."""
+        self.storage.flushall()
+
+    def _get_report(
+        self, report_map: dict[str, Any], transactions: list[Transaction],
+    ) -> TransactionReport:
+        return TransactionReport(
+            username=report_map.get(Key.username, ''),
+            start_date=datetime.fromisoformat(report_map['start_date']),
+            end_date=datetime.fromisoformat(report_map['end_date']),
+            transactions=transactions,
+            report_id=None,
+        )
