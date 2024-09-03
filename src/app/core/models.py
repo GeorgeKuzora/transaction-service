@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime
 from enum import Enum
+from typing import Self
 
 from pydantic import BaseModel
 
@@ -18,6 +19,31 @@ class TransactionType(Enum):
 
     deposit = False
     withdraw = True
+
+    def to_int(self) -> int:
+        """Преобразует TransactionType в int."""
+        tt_value = self.value
+        match tt_value:
+            case False:
+                return 0
+            case True:
+                return 1
+
+    @classmethod
+    def from_int(cls, t_type: int) -> Self:
+        """Преобразует int в TransactionType."""
+        match t_type:
+            case 0:
+                return cls.deposit  # type:ignore
+            case 1:
+                return cls.withdraw  # type:ignore
+            case _:
+                logger.error(
+                    f"{t_type} can't be converted to TransactionType",
+                )
+                raise ValueError(
+                    f"{t_type} can't be converted to TransactionType",
+                )
 
 
 class TransactionRequest(BaseModel):
