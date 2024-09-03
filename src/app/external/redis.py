@@ -135,16 +135,13 @@ class TransactionCacheMixin:
         return transactions
 
     def _get_transaction(self, mapping: dict[str, Any]) -> Transaction:
-        transaction_type = TransactionType.from_int(mapping.get(
-            'transaction_type', 1,
-        ))
-        if map_timestamp := mapping.get('timestamp', ''):  # noqa:WPS332 valid
-            timestamp = datetime.fromisoformat(map_timestamp)
-        else:
-            timestamp = datetime.now()
+        transaction_type = TransactionType.from_int(
+            mapping['transaction_type'],
+        )
+        timestamp = datetime.fromisoformat(mapping['timestamp'])
         return Transaction(
-            username=mapping.get(Key.username, ''),
-            amount=mapping.get('amount', 0),
+            username=mapping[Key.username],
+            amount=mapping['amount'],
             transaction_type=transaction_type,
             timestamp=timestamp,
         )
@@ -257,7 +254,7 @@ class TransactionReportCache(
         self, report_map: dict[str, Any], transactions: list[Transaction],
     ) -> TransactionReport:
         return TransactionReport(
-            username=report_map.get(Key.username, ''),
+            username=report_map[Key.username],
             start_date=datetime.fromisoformat(report_map['start_date']),
             end_date=datetime.fromisoformat(report_map['end_date']),
             transactions=transactions,
