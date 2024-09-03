@@ -135,9 +135,9 @@ class TransactionCacheMixin:
         return transactions
 
     def _get_transaction(self, mapping: dict[str, Any]) -> Transaction:
-        transaction_type = mapping.get(
-            'transaction_type', TransactionType.deposit,
-        )
+        transaction_type = TransactionType.from_int(mapping.get(
+            'transaction_type', 1,
+        ))
         if map_timestamp := mapping.get('timestamp', ''):  # noqa:WPS332 valid
             timestamp = datetime.fromisoformat(map_timestamp)
         else:
@@ -160,7 +160,7 @@ class TransactionCacheMixin:
         return {
             Key.username: transaction.username,
             'amount': transaction.amount,
-            'transaction_type': transaction.transaction_type.value,
+            'transaction_type': transaction.transaction_type.to_int(),
             'timestamp': transaction.timestamp.isoformat(),
         }
 
@@ -186,13 +186,14 @@ class TransactionsListCacheMixin:
     def _create_transacitons_list_cache(
         self, key: str, transactions_list: list[str],
     ) -> None:
-        try:
-            self.storage.rpush(key, *transactions_list)
-        except Exception as exc:
-            logger.error(
-                'cache error during create transactions list', exc_info=exc,
-            )
-            raise ServerError() from exc
+        if transactions_list:
+            try:
+                self.storage.rpush(key, *transactions_list)
+            except Exception as exc:
+                logger.error(
+                    'cache error during create transactions list', exc_info=exc,
+                )
+                raise ServerError() from exc
 
     def _get_transactions_list_cache(self, key: str) -> list[str]:
         try:
@@ -227,14 +228,12 @@ class TransactionReportCache(
         :param cache_value: Кэшированное значение
         :type cache_value: Token
         :return: Кэшированное значение
-        :rtype: Token
-        :raises KeyError: Значение не найдено в кэше
         """
         report = self.get_report_cache(cache_value)
         key = report.get('transactions', '')
-        if not key:
-            raise KeyError(f'report{cache_value} not found')
         transaction_keys = self._get_transactions_list_cache(key)
+        if not transaction_keys:
+            transaction_keys = []
         transactions = self.get_transactions_from_cache(transaction_keys)
         return self._get_report(report, transactions)
 
