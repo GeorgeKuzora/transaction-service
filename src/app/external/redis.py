@@ -33,6 +33,7 @@ class ReporCacheMixin:
             host=settings.redis.host,
             port=settings.redis.port,
             decode_responses=settings.redis.decode_responses,
+            db=settings.redis.db,
         )
 
     def create_report_cache(
@@ -96,6 +97,7 @@ class TransactionCacheMixin:
             host=settings.redis.host,
             port=settings.redis.port,
             decode_responses=settings.redis.decode_responses,
+            db=settings.redis.db,
         )
 
     def create_transactions_cache(
@@ -172,6 +174,7 @@ class TransactionsListCacheMixin:
             host=settings.redis.host,
             port=settings.redis.port,
             decode_responses=settings.redis.decode_responses,
+            db=settings.redis.db,
         )
 
     def _get_transactions_key(
