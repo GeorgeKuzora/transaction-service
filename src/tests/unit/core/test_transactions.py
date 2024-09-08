@@ -142,13 +142,13 @@ amount = 1
             user_positive_balance,
             amount,
             TransactionType.withdraw,
-            id='valid atributes BUY',
+            id='valid attributes BUY',
         ),
         pytest.param(
             user_positive_balance,
             amount,
             TransactionType.deposit,
-            id='valid atributes SELL',
+            id='valid attributes SELL',
         ),
         pytest.param(
             user_zero_balance,
@@ -228,7 +228,7 @@ async def test_create_transaction_not_found_error(
             user_positive_balance,
             datetime.now(),
             datetime.now() + timedelta(days=1),
-            id='valid atributes',
+            id='valid attributes',
         ),
         pytest.param(
             user_positive_balance,

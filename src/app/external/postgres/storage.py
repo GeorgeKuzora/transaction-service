@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 def create_pool() -> Engine:
-    """Создет sqlalchemy engine с пулом соединений."""
+    """Создает sqlalchemy engine с пулом соединений."""
     settings = get_settings()
     return create_engine(
         str(settings.postgres.pg_dns),
@@ -129,7 +129,7 @@ class DBUserStorage:
         :type user: User
         """
         logger.warning(
-            'DEPRICATED: user should be updated in create_transaction',
+            'DEPRECATED: user should be updated in create_transaction',
         )
 
     def _get_db_user(self, username: str, session: Session) -> db.User | None:

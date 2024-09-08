@@ -5,7 +5,7 @@ import pytest
 
 from app.core.models import TransactionReport
 from app.external.redis import (
-    ReporCacheMixin,
+    ReportCacheMixin,
     TransactionReportCache,
     TransactionsListCacheMixin,
 )
@@ -47,7 +47,7 @@ class TestWithEmptyCache:
     def _get_stored_data(
         self, external_data: TransactionReport,
     ) -> dict[str, Any]:
-        report_storage = ReporCacheMixin()
+        report_storage = ReportCacheMixin()
         transaction_list_storage = TransactionsListCacheMixin()
         key = report_storage._get_key(external_data)
         report: dict = report_storage.storage.hgetall(key)
@@ -80,7 +80,7 @@ class TestWithNotEmptyCache:
     def _get_stored_data(
         self, external_data: TransactionReport,
     ) -> dict[str, Any]:
-        report_storage = ReporCacheMixin()
+        report_storage = ReportCacheMixin()
         transaction_list_storage = TransactionsListCacheMixin()
         key = report_storage._get_key(external_data)
         report: dict = report_storage.storage.hgetall(key)

@@ -23,11 +23,11 @@ class Key(StrEnum):
     username = 'username'
 
 
-class ReporCacheMixin:
+class ReportCacheMixin:
     """Миксин для кэширования отчетов."""
 
     def __init__(self) -> None:
-        """Метод инициализации класса ReporCacheMixin."""
+        """Метод инициализации класса ReportCacheMixin."""
         settings = get_settings()
         self.storage = redis.Redis(
             host=settings.redis.host,
@@ -183,7 +183,7 @@ class TransactionsListCacheMixin:
         date_format = '%d-%m-%Y'  # noqa: WPS323 date format
         return f'transactions:{cache_value.username}{cache_value.start_date.strftime(date_format)}{cache_value.end_date.strftime(date_format)}'  # noqa: E501, WPS237, WPS221 cant help
 
-    def _create_transacitons_list_cache(
+    def _create_transactions_list_cache(
         self, key: str, transactions_list: list[str],
     ) -> None:
         if transactions_list:
@@ -206,7 +206,7 @@ class TransactionsListCacheMixin:
 
 
 class TransactionReportCache(
-    ReporCacheMixin, TransactionCacheMixin, TransactionsListCacheMixin,
+    ReportCacheMixin, TransactionCacheMixin, TransactionsListCacheMixin,
 ):
     """Имплементация кэша для хранения отчетов."""
 
@@ -246,7 +246,7 @@ class TransactionReportCache(
         """
         transactions_key = self._get_transactions_key(cache_value)
         transactions = self.create_transactions_cache(cache_value.transactions)
-        self._create_transacitons_list_cache(transactions_key, transactions)
+        self._create_transactions_list_cache(transactions_key, transactions)
         self.create_report_cache(cache_value, transactions_key)
 
     async def flush_cache(self) -> None:

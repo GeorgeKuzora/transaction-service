@@ -95,16 +95,7 @@ default_validator = Validator()
 
 
 class TransactionService:
-    """
-    Сервис обработки транзакций пользователя.
-
-    Позволяет:
-       Создать транзацию и записать ее в хранилище.
-       Получть список транзаций за указанный период.
-
-    Attributes:
-        repository: Repository - хранилище данных.
-    """
+    """Сервис обработки транзакций пользователя."""
 
     def __init__(
         self,
@@ -157,7 +148,7 @@ class TransactionService:
             timestamp=datetime.now(),
         )
 
-        user.process_transacton(transaction)
+        user.process_transaction(transaction)
         update_user_task = asyncio.create_task(
             self.repository.update_user(user),
         )
@@ -175,7 +166,7 @@ class TransactionService:
         Метод создания отчета о транзакциях пользователя.
 
         Создает сохраняет в хранилище данных и возвращает отчет
-        о транзакциях пользоватля за период.
+        о транзакциях пользователя за период.
 
         :param report_request: Запрос отчета
         :type report_request: TransactionReportRequest

@@ -35,7 +35,7 @@ service = get_service()
 async def create_transaction(
     transaction_request: TransactionRequest,
 ) -> Transaction:
-    """Созадет транзакцию."""
+    """Создает транзакцию."""
     with global_tracer().start_active_span('create_transaction') as scope:
         scope.span.set_tag(Tag.username, transaction_request.username)
         task = asyncio.create_task(

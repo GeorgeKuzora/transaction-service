@@ -48,11 +48,11 @@ def service_with_user_fixture(service_with_cache: TransactionService):
     """
     Возвращает функцию для создания сервиса.
 
-    Возвращаемая функция примает user,
+    Возвращаемая функция принимает user,
     создает запись о пользователе в базе данных
 
     :param service_with_cache: экземпляр сервиса
-    :type service_with_cache: TransactionSerivce
+    :type service_with_cache: TransactionService
     :return: функция создания сервиса
     :rtype: callable
     """
@@ -71,7 +71,7 @@ def service_with_transactions_fixture(
     """
     Возвращает функцию для создания сервиса.
 
-    Возвращаемая функция примает user,
+    Возвращаемая функция принимает user,
     создает запись о пользователе в базе данных
 
     :param service_with_user_fixture: функция создания сервиса c пользователем
@@ -94,7 +94,7 @@ def service_with_transactions_fixture(
 @pytest.fixture
 def service_mocker(monkeypatch):
     """
-    Мокирует app.api.handlers.service, возращает функцию мокирования.
+    Мокирует app.api.handlers.service, возвращает функцию мокирования.
 
     Функция мокирования принимает объект сервиса и подменяет им
     объект сервиса в модуле хэндлеров.

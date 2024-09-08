@@ -63,7 +63,7 @@ class Transaction(BaseModel):
         transaction_id: int | None - ID транзакции
         username: str - ID пользователя.
         amount: int - сумма транзакции.
-        transaction_type: bool - тип транзации. True-продажа, False-покупка.
+        transaction_type: bool - тип транзакции. True-продажа, False-покупка.
         timestamp: datetime - временная метка транзакции.
     """
 
@@ -84,7 +84,7 @@ class TransactionReportRequest(BaseModel):
 
 class TransactionReport(BaseModel):
     """
-    Отчет о транзаkциях выполненных пользователем.
+    Отчет о транзакциях выполненных пользователем.
 
     Attributes:
         report_id: int - ID отчета о транзакциях
@@ -126,7 +126,7 @@ class User(BaseModel):
             logger.info(f'Баланс пользователя {transaction_request.username} не может быть отрицательным')  # noqa: E501
             raise ValidationError(detail=f'Баланс пользователя {transaction_request.username} не может быть отрицательным')  # noqa: E501
 
-    def process_transacton(self, transaction: Transaction):
+    def process_transaction(self, transaction: Transaction):
         """Производит изменение баланса пользователя."""
         if transaction.transaction_type == TransactionType.deposit:
             self.balance += transaction.amount
