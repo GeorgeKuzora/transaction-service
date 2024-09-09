@@ -54,8 +54,16 @@ class Settings(BaseSettings):
     redis: RedisSettings
 
     @classmethod
-    def from_yaml(cls, config_path) -> Self:
-        """Создает объект класса из файла yaml."""
+    def from_yaml(cls, config_path: str) -> Self:
+        """
+        Создает объект класса из файла yaml.
+
+        :param config_path: Путь к файлу конфигурации.
+        :type config_path: str
+        :return: Объект с конфигурацией приложения.
+        :rtype: Settings
+        :raises ConfigError: При ошибке в ходе выполнения операции.
+        """
         if not cls._is_valid_path(config_path):
             logger.critical(
                 f'config file is missing on path {config_path}',
@@ -74,7 +82,18 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
-    """Создает конфигурацию сервиса."""
+    """
+    Создает конфигурацию сервиса.
+
+    :return: Объект с конфигурацией приложения.
+    :rtype: Settings
+    :raises ConfigError: При ошибке в ходе выполнения операции.
+    """
     config_path_env_var = 'CONFIG_PATH'
     config_file = os.getenv(config_path_env_var)
+    if config_file is None:
+        logger.critical(f'env variable {config_path_env_var} not found')
+        raise ConfigError(
+            detail=f'env variable {config_path_env_var} not found',
+        )
     return Settings.from_yaml(config_file)

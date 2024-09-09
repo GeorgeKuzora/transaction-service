@@ -41,7 +41,15 @@ class ReportCacheMixin:
         report_request: TransactionReportRequest | TransactionReport,
         transactions_key: str,
     ) -> None:
-        """Создает кэш отчета."""
+        """
+        Создает кэш отчета.
+
+        :param report_request: Данные для создания отчета.
+        :type report_request: TransactionReportRequest, TransactionReport,
+        :param transactions_key: Ключ списка транзакций.
+        :type transactions_key: str
+        :raises ServerError: При ошибке при записи в кэш.
+        """
         key = self._get_key(report_request)
         mapping = self._get_mapping(report_request, transactions_key)
         try:
@@ -55,7 +63,16 @@ class ReportCacheMixin:
     def get_report_cache(
         self, report_request: TransactionReportRequest,
     ) -> dict[str, Any]:
-        """Получает кэш отчета."""
+        """
+        Получает кэш отчета.
+
+        :param report_request: Данные для создания отчета.
+        :type report_request: TransactionReportRequest
+        :return: Получает данные о отчете из кэша.
+        :rtype: dict[str, Any]
+        :raises KeyError: Если запрошенные данные не найдены в кэше.
+        :raises ServerError: При ошибке доступа к кэшу.
+        """
         key = self._get_key(report_request)
         try:
             value_from_cache: dict[str, Any] = self.storage.hgetall(key)  # type:ignore # noqa: E501
@@ -103,7 +120,15 @@ class TransactionCacheMixin:
     def create_transactions_cache(
         self, transactions: list[Transaction],
     ) -> list[str]:
-        """Создает кэш транзакций."""
+        """
+        Создает кэш транзакций.
+
+        :param transactions: Список транзакций.
+        :type transactions: list[Transaction]
+        :return: Список ключей созданных транзакций.
+        :rtype: list[str]
+        :raises ServerError: При ошибке доступа к кэшу.
+        """
         transactions_keys = []
         for transaction in transactions:
             key = self._get_transaction_key(transaction)
@@ -122,7 +147,15 @@ class TransactionCacheMixin:
     def get_transactions_from_cache(
         self, keys: list[str],
     ) -> list[Transaction]:
-        """Получает транзакции из кэша."""
+        """
+        Получает транзакции из кэша.
+
+        :param keys: Список ключей транзакций.
+        :type keys: list[str]
+        :return: Список транзакций полученных из кэша.
+        :rtype: list[Transaction]
+        :raises ServerError: При ошибке доступа к кэшу.
+        """
         transactions = []
         for key in keys:
             try:

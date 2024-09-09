@@ -21,7 +21,12 @@ class TransactionType(Enum):
     withdraw = True
 
     def to_int(self) -> int:
-        """Преобразует TransactionType в int."""
+        """
+        Преобразует TransactionType в int.
+
+        :return: Значение TransactionType в виде int.
+        :rtype: int
+        """
         tt_value = self.value
         match tt_value:
             case False:
@@ -31,7 +36,15 @@ class TransactionType(Enum):
 
     @classmethod
     def from_int(cls, t_type: int | str) -> Self:
-        """Преобразует int в TransactionType."""
+        """
+        Преобразует int в TransactionType.
+
+        :param t_type: Значение TransactionType в форме int.
+        :type t_type: int, str
+        :return: Объект TransactionType соответствующий входному int.
+        :rtype: TransactionType
+        :raises ValueError: Если в метод передано неверное значение.
+        """
         t_type = int(t_type)
         match t_type:
             case 0:
@@ -112,7 +125,13 @@ class User(BaseModel):
     def validate_transaction(
         self, transaction_request: TransactionRequest,
     ) -> None:
-        """Валидирует транзакцию и баланс."""
+        """
+        Валидирует транзакцию и баланс.
+
+        :param transaction_request: Запрос на создание транзакции.
+        :type transaction_request: TransactionRequest
+        :raises ValidationError: Если транзакция не прошла валидацию.
+        """
         valid = True
         invalid = False
         validation_result = invalid
@@ -127,7 +146,12 @@ class User(BaseModel):
             raise ValidationError(detail=f'Баланс пользователя {transaction_request.username} не может быть отрицательным')  # noqa: E501
 
     def process_transaction(self, transaction: Transaction):
-        """Производит изменение баланса пользователя."""
+        """
+        Производит изменение баланса пользователя.
+
+        :param transaction: Транзакция для изменения баланса.
+        :type transaction: Transaction
+        """
         if transaction.transaction_type == TransactionType.deposit:
             self.balance += transaction.amount
         elif transaction.transaction_type == TransactionType.withdraw:

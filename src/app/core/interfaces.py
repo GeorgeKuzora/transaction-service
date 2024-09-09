@@ -17,14 +17,24 @@ class Repository(Protocol):
     """
 
     async def create_transaction(self, transaction: Transaction) -> Transaction:
-        """Абстрактный метод создания транзакции."""
+        """
+        Абстрактный метод создания транзакции.
+
+        :param transaction: Данные о создаваемой транзакции.
+        :type transaction: Transaction
+        """
         ...  # noqa: WPS428 valid protocol syntax
 
     async def create_transaction_report(
         self,
         request: TransactionReportRequest,
     ) -> TransactionReport:
-        """Абстрактный метод создания отчета."""
+        """
+        Абстрактный метод создания отчета.
+
+        :param request: Данные о создаваемом отчете.
+        :type request: TransactionReport
+        """
         ...  # noqa: WPS428 valid protocol syntax
 
     async def get_user(self, username: str) -> User | None:
