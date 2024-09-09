@@ -69,7 +69,7 @@ class TestUpdateUser:
         """Проверяет что метод выполняется без ошибок."""
         caplog.set_level(logging.DEBUG)
         await storage.update_user(valid_user)
-        assert 'DEPRICATED' in caplog.text
+        assert 'DEPRECATED' in caplog.text
 
 
 class TestCreateTransaction:
