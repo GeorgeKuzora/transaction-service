@@ -22,7 +22,12 @@ router = APIRouter()
 
 
 def get_service() -> TransactionService:
-    """Инициализирует сервис."""
+    """
+    Создает сервис.
+
+    :return: Объект сервиса.
+    :rtype: TransactionService
+    """
     storage = DBStorage()
     cache = TransactionReportCache()
     return TransactionService(repository=storage, cache=cache)
@@ -35,7 +40,15 @@ service = get_service()
 async def create_transaction(
     transaction_request: TransactionRequest,
 ) -> Transaction:
-    """Созадет транзакцию."""
+    """
+    Создает транзакцию.
+
+    :param transaction_request: Данные для создания транзакции.
+    :type transaction_request: TransactionRequest
+    :return: Созданная транзакция.
+    :rtype: Transaction
+    :raises HTTPException: При ошибке в ходе выполнения.
+    """
     with global_tracer().start_active_span('create_transaction') as scope:
         scope.span.set_tag(Tag.username, transaction_request.username)
         task = asyncio.create_task(
@@ -69,7 +82,15 @@ async def create_transaction(
 async def create_report(
     report_request: TransactionReportRequest,
 ) -> TransactionReport:
-    """Создает отчет."""
+    """
+    Создает отчет.
+
+    :param report_request: Данные для создания отчета.
+    :type report_request: TransactionReportRequest
+    :return: Отчет о транзакциях.
+    :rtype: TransactionReport
+    :raises HTTPException: При ошибке в ходе выполнения операции.
+    """
     with global_tracer().start_active_span('create_report') as scope:
         scope.span.set_tag(Tag.username, report_request.username)
         task = asyncio.create_task(

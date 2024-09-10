@@ -8,6 +8,11 @@ tracing:
   sampler_param: 1
   agent_host: "jaeger"
   agent_port: 6831
-  service_name: "transacton-service"
+  service_name: "transaction-service"
   logging: true
   validation: true
+redis:
+  host: "redis-1"
+  port: 6379
+  decode_responses: True
+  db: 10

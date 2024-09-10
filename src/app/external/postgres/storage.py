@@ -12,7 +12,12 @@ logger = logging.getLogger(__name__)
 
 
 def create_pool() -> Engine:
-    """Создет sqlalchemy engine с пулом соединений."""
+    """
+    Создает sqlalchemy engine с пулом соединений.
+
+    :return: sqlalchemy engine с пулом соединений.
+    :rtype: Engine
+    """
     settings = get_settings()
     return create_engine(
         str(settings.postgres.pg_dns),
@@ -37,7 +42,16 @@ class DBTransactionStorage():
     async def create_transaction(
         self, transaction: srv.Transaction,
     ) -> srv.Transaction:
-        """Метод создания транзакции."""
+        """
+        Метод создания транзакции.
+
+        :param transaction: Объект транзакции бизнес логики.
+        :type transaction: Transaction
+        :return: Объект транзакции созданной в базе данных
+        :rtype: Transaction
+        :raises NotFoundError: Если пользователь не найден в базе данных.
+        :raises RepositoryError: При ошибки записи в базу данных.
+        """
         with Session(self.pool) as session:
             user = self._get_db_user(transaction.username, session)
             if user is None:
@@ -129,7 +143,7 @@ class DBUserStorage:
         :type user: User
         """
         logger.warning(
-            'DEPRICATED: user should be updated in create_transaction',
+            'DEPRECATED: user should be updated in create_transaction',
         )
 
     def _get_db_user(self, username: str, session: Session) -> db.User | None:
@@ -163,7 +177,16 @@ class DBReportStorage:
         self,
         request: srv.TransactionReportRequest,
     ) -> srv.TransactionReport:
-        """Метод создания отчета."""
+        """
+        Метод создания отчета.
+
+        :param request: Объект запроса отчета бизнес логики.
+        :type request: TransactionReportRequest
+        :return: Объект отчета созданного в базе данных
+        :rtype: TransactionReport
+        :raises NotFoundError: Если пользователь не найден в базе данных.
+        :raises RepositoryError: При ошибки записи в базу данных.
+        """
         with Session(self.pool) as session:
             user = self._get_db_user(request.username, session)
             if user is None:

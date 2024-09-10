@@ -26,13 +26,13 @@ user_zero_balance = User(
             user_positive_balance,
             1,
             TransactionType.withdraw,
-            id='valid atributes withdraw',
+            id='valid attributes withdraw',
         ),
         pytest.param(
             user_positive_balance,
             1,
             TransactionType.deposit,
-            id='valid atributes deposit',
+            id='valid attributes deposit',
         ),
         pytest.param(
             user_zero_balance,
@@ -89,7 +89,7 @@ async def test_create_transaction(
 async def test_create_transaction_raises(
     user: User, amount, transaction_type, service,
 ):
-    """create_transaction поднимает ошибку если пользоатель не найден."""
+    """create_transaction поднимает ошибку если пользователь не найден."""
     request = TransactionRequest(
         username=user.username,
         amount=amount,
@@ -108,7 +108,7 @@ class TestCreateTransactionReport:
     base_date = datetime(
         year=date['year'], month=date['month'], day=date['day'],
     )
-    empty_report_lenght = 0
+    empty_report_length = 0
     transactions_in_db = [
         Transaction(
             username=username,
@@ -168,7 +168,7 @@ class TestCreateTransactionReport:
                     start_date=base_date + timedelta(days=2),
                     end_date=datetime.now() + timedelta(days=4),
                 ),
-                empty_report_lenght,
+                empty_report_length,
                 id='transactions in period = 0',
             ),
             pytest.param(
@@ -177,7 +177,7 @@ class TestCreateTransactionReport:
                     start_date=datetime.now(),
                     end_date=datetime.now() - timedelta(days=1),
                 ),
-                empty_report_lenght,
+                empty_report_length,
                 id='invalid period',
                 marks=pytest.mark.xfail(raises=ValidationError),
             ),

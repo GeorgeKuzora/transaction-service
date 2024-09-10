@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "transaction-service"
-version = "0.9.0"
+version = "0.10.0"
 description = ""
 authors = ["Georgiy Kuzora <georgiy@kuzora.ru>"]
 readme = "README.md"
@@ -15,6 +15,7 @@ psycopg2-binary = "2.9.9"
 alembic = "1.13.2"
 opentracing = "2.4.0"
 jaeger-client = "4.8.0"
+redis = { version = "5.0.8", extras = ["hiredis"] }
 
 
 [tool.poetry.group.dev.dependencies]

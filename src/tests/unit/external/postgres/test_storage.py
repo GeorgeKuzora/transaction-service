@@ -62,14 +62,14 @@ class TestGetUser:
 
 
 class TestUpdateUser:
-    """Тестирует метод upgrage_user."""
+    """Тестирует метод upgrade_user."""
 
     @pytest.mark.asyncio
     async def test_update_user(self, caplog, storage):
         """Проверяет что метод выполняется без ошибок."""
         caplog.set_level(logging.DEBUG)
         await storage.update_user(valid_user)
-        assert 'DEPRICATED' in caplog.text
+        assert 'DEPRECATED' in caplog.text
 
 
 class TestCreateTransaction:
@@ -150,7 +150,7 @@ class TestCreateTransaction:
 
 
 class TestCreateReport:
-    """Тестирует метод create_transaciton_report."""
+    """Тестирует метод create_transaction_report."""
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
@@ -211,7 +211,7 @@ class TestCreateReport:
     async def test_create_report_storage_state(
         self, report_request, expected_qnt, storage_fixture, request,
     ):
-        """Проверяет состояие хранилища данных после выполнения метода."""
+        """Проверяет состояние хранилища данных после выполнения метода."""
         storage, _ = request.getfixturevalue(storage_fixture)
 
         report: TransactionReport = await storage.create_transaction_report(

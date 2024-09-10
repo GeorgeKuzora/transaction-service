@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime
 from enum import Enum
+from typing import Self
 
 from pydantic import BaseModel
 
@@ -19,6 +20,45 @@ class TransactionType(Enum):
     deposit = False
     withdraw = True
 
+    def to_int(self) -> int:
+        """
+        Преобразует TransactionType в int.
+
+        :return: Значение TransactionType в виде int.
+        :rtype: int
+        """
+        tt_value = self.value
+        match tt_value:
+            case False:
+                return 0
+            case True:
+                return 1
+
+    @classmethod
+    def from_int(cls, t_type: int | str) -> Self:
+        """
+        Преобразует int в TransactionType.
+
+        :param t_type: Значение TransactionType в форме int.
+        :type t_type: int, str
+        :return: Объект TransactionType соответствующий входному int.
+        :rtype: TransactionType
+        :raises ValueError: Если в метод передано неверное значение.
+        """
+        t_type = int(t_type)
+        match t_type:
+            case 0:
+                return cls.deposit  # type:ignore
+            case 1:
+                return cls.withdraw  # type:ignore
+            case _:
+                logger.error(
+                    f"{t_type} can't be converted to TransactionType",
+                )
+                raise ValueError(
+                    f"{t_type} can't be converted to TransactionType",
+                )
+
 
 class TransactionRequest(BaseModel):
     """Запрос создания транзакции."""
@@ -36,7 +76,7 @@ class Transaction(BaseModel):
         transaction_id: int | None - ID транзакции
         username: str - ID пользователя.
         amount: int - сумма транзакции.
-        transaction_type: bool - тип транзации. True-продажа, False-покупка.
+        transaction_type: bool - тип транзакции. True-продажа, False-покупка.
         timestamp: datetime - временная метка транзакции.
     """
 
@@ -57,7 +97,7 @@ class TransactionReportRequest(BaseModel):
 
 class TransactionReport(BaseModel):
     """
-    Отчет о транзаkциях выполненных пользователем.
+    Отчет о транзакциях выполненных пользователем.
 
     Attributes:
         report_id: int - ID отчета о транзакциях
@@ -85,7 +125,13 @@ class User(BaseModel):
     def validate_transaction(
         self, transaction_request: TransactionRequest,
     ) -> None:
-        """Валидирует транзакцию и баланс."""
+        """
+        Валидирует транзакцию и баланс.
+
+        :param transaction_request: Запрос на создание транзакции.
+        :type transaction_request: TransactionRequest
+        :raises ValidationError: Если транзакция не прошла валидацию.
+        """
         valid = True
         invalid = False
         validation_result = invalid
@@ -99,8 +145,13 @@ class User(BaseModel):
             logger.info(f'Баланс пользователя {transaction_request.username} не может быть отрицательным')  # noqa: E501
             raise ValidationError(detail=f'Баланс пользователя {transaction_request.username} не может быть отрицательным')  # noqa: E501
 
-    def process_transacton(self, transaction: Transaction):
-        """Производит изменение баланса пользователя."""
+    def process_transaction(self, transaction: Transaction):
+        """
+        Производит изменение баланса пользователя.
+
+        :param transaction: Транзакция для изменения баланса.
+        :type transaction: Transaction
+        """
         if transaction.transaction_type == TransactionType.deposit:
             self.balance += transaction.amount
         elif transaction.transaction_type == TransactionType.withdraw:

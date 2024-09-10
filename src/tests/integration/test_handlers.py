@@ -47,7 +47,7 @@ invalid_transaction_request = {
     Literals.amount: 1,
     Literals.transaction_type: 1,
 }
-big_widthdraw_transaction_request = {
+big_withdraw_transaction_request = {
     Literals.username: Literals.george,
     Literals.amount: 2,
     Literals.transaction_type: 1,
@@ -96,34 +96,34 @@ class TestCreateTransaction:
                 valid_transaction_request,
                 verified_user,
                 status.HTTP_200_OK,
-                id='verified user, valid respose',
+                id='verified user, valid response',
             ),
             pytest.param(
                 valid_transaction_request,
                 not_verified_user,
                 status.HTTP_200_OK,
-                id='not verified user, valid respose',
+                id='not verified user, valid response',
             ),
             pytest.param(
                 user_not_found_transaction_request,
                 verified_user,
                 status.HTTP_404_NOT_FOUND,
-                id='user not found, invalid respose',
+                id='user not found, invalid response',
             ),
             pytest.param(
                 invalid_transaction_request,
                 verified_user,
                 status.HTTP_422_UNPROCESSABLE_ENTITY,
-                id='invalid request, invalid respose',
+                id='invalid request, invalid response',
             ),
             pytest.param(
-                big_widthdraw_transaction_request,
+                big_withdraw_transaction_request,
                 not_verified_user,
                 status.HTTP_403_FORBIDDEN,
                 id='not verified user forbidden transaction',
             ),
             pytest.param(
-                big_widthdraw_transaction_request,
+                big_withdraw_transaction_request,
                 verified_user,
                 status.HTTP_200_OK,
                 id='verified user accepted transaction',

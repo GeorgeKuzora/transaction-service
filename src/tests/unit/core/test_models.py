@@ -24,7 +24,7 @@ balance_after_withdraw = 0
 
 @pytest.fixture
 def test_user():
-    """Ооздает пользователя."""
+    """Создает пользователя."""
     return User(
         username=username,
         balance=10,
@@ -48,6 +48,6 @@ def test_user():
 )
 def test_user_process_transaction(test_user, transaction, expected_balance):
     """Тестирует метод process_transaction."""
-    test_user.process_transacton(transaction)
+    test_user.process_transaction(transaction)
 
     assert test_user.balance == expected_balance

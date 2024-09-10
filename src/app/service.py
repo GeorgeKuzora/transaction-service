@@ -11,7 +11,12 @@ from app.metrics.tracing import get_tracer, tracing_middleware
 
 @asynccontextmanager
 async def lifetime(app: FastAPI):
-    """Функция жизненного цикла сервиса."""
+    """
+    Функция жизненного цикла сервиса.
+
+    :param app: Инстанс приложения.
+    :yield: Scope запроса
+    """
     tracer = get_tracer()
     yield {'tracer': tracer}
 
